@@ -2,7 +2,7 @@
 theblues
 =============================
 
-Python library for using the juju charm store API.
+Python library for using the juju charmstore API.
 
 Installation
 ------------
@@ -15,4 +15,4 @@ which must be installed from the repos::
 
 	$apt-get install libmacaroons0 python-macaroons libsodium13
 
-Without these, theblues cannot talk with the charmstore.
+Without these, theblues cannot communicate with the charmstore.
