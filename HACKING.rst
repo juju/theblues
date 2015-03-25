@@ -18,8 +18,8 @@ If you want to hack on theblues, you should follow the directions below.
 Setting up a development environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get Started!
-------------
+Get Started
+-----------
 1. Fork_ the `theblues` repo on GitHub.
 
 .. _Fork: https://github.com/juju/theblues/fork
