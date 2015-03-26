@@ -11,7 +11,7 @@ help:
 	@echo "dev - install theblues in develop mode"
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
-	@echo "check - run tests against 2.7 and 3.4 and check lint."
+	@echo "check - clean env, run tests against 2.7 and 3.4, check lint,"
 	@echo "test-all - run tests against 2.7 and 3.4, check lint, and test docs."
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
@@ -93,12 +93,7 @@ test-all: $(TOX)
 	$(TOX)	
 
 .PHONY: check
-check: $(TOX)
-
-
-.PHONY: check
-check: $(TOX)
-	$(TOX) -e py27 -e py34 -e style
+check: clean test-all
 
 lint: $(FLAKE8)
 	$(FLAKE8) theblues
