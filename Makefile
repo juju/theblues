@@ -11,8 +11,8 @@ help:
 	@echo "dev - install theblues in develop mode"
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
-	@echo "check - run tests against 2.7 and 3.4 and check lint."
-	@echo "test-all - run tests against 2.7 and 3.4, check lint, and test docs."
+	@echo "check - clean env, run tests against 2.7 and 3.4, check lint,"
+	@echo "test-all - run tests against 2.7 and 3.4, check lint, and test docs"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "clean - remove build and python artifacts"
@@ -58,6 +58,8 @@ dev: venv $(THEBLUES)
 
 .phony: sysdeps
 sysdeps:
+	sudo apt-get install -y software-properties-common
+	sudo add-apt-repository ppa:yellow/ppa -y
 	sudo apt-get install libmacaroons0 python-macaroons libsodium13
 
 .PHONY: deps
@@ -84,8 +86,8 @@ devdeps: deps venv
 test: venv dev $(PYTEST)
 	$(PYTEST) -s theblues/tests
 
-.PHONY: test-coverage
-test-coverage: deps venv dev $(PYTEST)
+.PHONY: coverage
+coverage: deps venv dev $(PYTEST)
 	$(PYTEST) --cov=theblues -s theblues/tests
 
 .PHONY: test-all
@@ -93,12 +95,7 @@ test-all: $(TOX)
 	$(TOX)	
 
 .PHONY: check
-check: $(TOX)
-
-
-.PHONY: check
-check: $(TOX)
-	$(TOX) -e py27 -e py34 -e style
+check: clean test-all
 
 lint: $(FLAKE8)
 	$(FLAKE8) theblues
