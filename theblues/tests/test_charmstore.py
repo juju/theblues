@@ -45,6 +45,11 @@ def entity_404(url, request):
     return {'status_code': 404}
 
 
+@urlmatch(path=ID_PATH)
+def entity_407(url, request):
+    return {'status_code': 407}
+
+
 @urlmatch(path=CONFIG_PATH)
 def config_200(url, request):
     return {'status_code': 200, 'content': {'exists': True}}
@@ -303,6 +308,11 @@ class TestCharmStore(TestCase):
 
     def test_charm_error(self):
         with HTTMock(entity_404):
+            with self.assertRaises(EntityNotFound):
+                self.cs.charm(SAMPLE_CHARM)
+
+    def test_charm_error_407(self):
+        with HTTMock(entity_407):
             with self.assertRaises(EntityNotFound):
                 self.cs.charm(SAMPLE_CHARM)
 

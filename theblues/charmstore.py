@@ -33,7 +33,7 @@ class CharmStore(object):
         # Is it te right place to log or should we let the users of the blues
         # to handle logging ?
         except HTTPError as exc:
-            if exc.response.status_code == 404:
+            if exc.response.status_code in (404, 407):
                 raise EntityNotFound(url)
             else:
                 message = ('Error during request: {url} '
