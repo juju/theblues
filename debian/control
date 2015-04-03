@@ -1,0 +1,11 @@
+Source: theblues
+Maintainer: JC Sackett <jcsackett@canonical.com>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7), python3-setuptools, python3-all
+Standards-Version: 3.9.1
+
+Package: python-theblues
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Python library for using the juju charm store API.
