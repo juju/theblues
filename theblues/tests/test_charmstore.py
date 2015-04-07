@@ -445,7 +445,7 @@ class TestCharmStore(TestCase):
             results = self.cs.search('foo', tags=['databases', 'applications'])
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
 
-    def test_search_seriess(self):
+    def test_search_series(self):
         with HTTMock(search_series_200):
             results = self.cs.search('foo', series='precise')
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)

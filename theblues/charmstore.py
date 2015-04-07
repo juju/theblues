@@ -240,7 +240,7 @@ class CharmStore(object):
         @param owner Optional owner. If provided, search results will only
                include entities that owner can view.
         @param series The series to filter; can be a list of series or a
-               single serie.
+               single series.
         '''
         url = '%s/search?text=%s' % (self.url, quote(text))
         if includes is not None:
