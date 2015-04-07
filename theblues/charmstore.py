@@ -226,7 +226,7 @@ class CharmStore(object):
 
     def search(self, text, includes=None, limit=None,
                autocomplete=False, promulgated_only=False, tags=None,
-               sort=None, owner=None):
+               sort=None, owner=None, series=None):
         '''Search for entities in the charmstore.
 
         @param text The text to search for.
@@ -239,6 +239,8 @@ class CharmStore(object):
                which can be name, author, series and - in front for descending
         @param owner Optional owner. If provided, search results will only
                include entities that owner can view.
+        @param series The series to filter; can be a list of series or a
+               single serie.
         '''
         url = '%s/search?text=%s' % (self.url, quote(text))
         if includes is not None:
@@ -248,16 +250,18 @@ class CharmStore(object):
             url += '&limit=%s' % limit
         if autocomplete:
             url += '&autocomplete=1'
-
         if promulgated_only:
             url += '&owner='
         elif owner is not None:
             url += '&owner=' + owner
-
         if tags is not None:
             if type(tags) is list:
                 tags = ','.join(tags)
             url += '&tags=%s' % tags
+        if series is not None:
+            if type(series) is list:
+                series = ','.join(series)
+            url += '&series=%s' % series
         if sort is not None:
             url += '&sort=%s' % sort
         data = self._get(url)

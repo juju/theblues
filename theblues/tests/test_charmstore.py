@@ -190,6 +190,30 @@ def search_multiple_tags_200(url, request):
 
 
 @urlmatch(path=SEARCH_PATH)
+def search_series_200(url, request):
+    expected = 'text=foo&series=precise'
+    if url.query != expected:
+        raise AssertionError(
+            'Got wrong query string: %s vs %s' % (url.query, expected))
+    return {
+        'status_code': 200,
+        'content': b'{"Results": [{"Id": "cs:foo/bar-0"}]}'
+        }
+
+
+@urlmatch(path=SEARCH_PATH)
+def search_multiple_series_200(url, request):
+    expected = 'text=foo&series=trusty,precise'
+    if url.query != expected:
+        raise AssertionError(
+            'Got wrong query string: %s vs %s' % (url.query, expected))
+    return {
+        'status_code': 200,
+        'content': b'{"Results": [{"Id": "cs:foo/bar-0"}]}'
+        }
+
+
+@urlmatch(path=SEARCH_PATH)
 def search_autocomplete_200(url, request):
     expected = 'text=foo&autocomplete=1'
     if url.query != expected:
@@ -419,6 +443,16 @@ class TestCharmStore(TestCase):
     def test_search_multiple_tags(self):
         with HTTMock(search_multiple_tags_200):
             results = self.cs.search('foo', tags=['databases', 'applications'])
+            self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
+
+    def test_search_seriess(self):
+        with HTTMock(search_series_200):
+            results = self.cs.search('foo', series='precise')
+            self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
+
+    def test_search_multiple_series(self):
+        with HTTMock(search_multiple_series_200):
+            results = self.cs.search('foo', series=['trusty', 'precise'])
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
 
     def test_search_owner(self):
