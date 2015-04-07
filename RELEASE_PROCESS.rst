@@ -7,7 +7,7 @@ current working repository as the following commands expect a fresh clone.
 ::
 
      git clone git@github.com:juju/theblues.git
-     cd blues_browser
+     cd theblues
 
 
 Find the next release number. You can check the last release by running `git
