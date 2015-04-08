@@ -41,18 +41,13 @@ Use the output from that to update the changelog with the major changes of the
 release.
 
 
-Update the application version to the correct version and then commit the
-changelog.
+Update the application version to the correct version.
+
+Update the application version in the the setup.py
 
 ::
 
     vim setup.py
-
-update the setup.py
-
-::
-
-    vim CHANGELOG.rst
 
 
 change
@@ -60,6 +55,9 @@ change
 setup(
     name='theblues',
     version='$the_new_version'
+
+
+and then commit the changes.
 
 ::
 
@@ -69,14 +67,33 @@ setup(
 Create the release
 ------------------
 
+
+Checkout the master branch, and merge develop into it. Verify that it passes
+tests by running make check.
+
+::
+
+    git checkout master
+    git merge develop
+    make check
+
+
 Tag the commit with the release number and push your changes to master on github.
 
 
 ::
 
     git tag $THEBLUESRELEASE
-    git push origin develop --tags
+    git push origin master --tags
 
+
+Head back to the develop branch and push it to the remote.
+
+::
+
+    git co develop
+    git merge master
+    git push origin develop
 
 Upload the release to pypi
 ----------------------------
@@ -113,9 +130,6 @@ Then you can publish the release to pipy,
 
 ::
 
-    python setup.py register -r pypitest
-    python setup.py sdist upload -r pypitest
-    python setup.py register -r pypi
-    python setup.py sdist upload -r pypi
-
+    make dist
+    make upload
 
