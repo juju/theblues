@@ -159,6 +159,18 @@ def search_limit_200(url, request):
 
 
 @urlmatch(path=SEARCH_PATH)
+def search_type_200(url, request):
+    expected = 'text=foo&type=bundle'
+    if url.query != expected:
+        raise AssertionError(
+            'Got wrong query string: %s vs %s' % (url.query, expected))
+    return {
+        'status_code': 200,
+        'content': b'{"Results": [{"Id": "cs:bundle/mediawiki-single-7"}]}'
+        }
+
+
+@urlmatch(path=SEARCH_PATH)
 def search_includes_200(url, request):
     expected = 'text=foo&include=archive-size&include=charm-metadata'
     if url.query != expected:
@@ -444,6 +456,11 @@ class TestCharmStore(TestCase):
             results = self.cs.search(
                 'foo', includes=['archive-size', 'charm-metadata'])
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
+
+    def test_search_type(self):
+        with HTTMock(search_type_200):
+            results = self.cs.search('foo', doc_type='bundle')
+            self.assertEqual([{'Id': 'cs:bundle/mediawiki-single-7'}], results)
 
     def test_search_tags(self):
         with HTTMock(search_tags_200):
