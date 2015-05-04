@@ -133,3 +133,17 @@ Then you can publish the release to pipy,
     make dist
     make upload
 
+Upload the release to Github
+----------------------------
+
+Go to the tags_ page in Github and find the release that should have been
+generated from your tag. If you do not see it, ensure you pushed your tag when
+you pushed your other changes.
+
+Go to the proper release, and click `Edit release notes`. Update the release
+notes to match the changelog you put in CHANGELOG.rst. Set the name to be the
+tag name.
+
+Upload the release tarball you created in the binaries field.
+
+.. _tags: https://github.com/juju/theblues/tags
