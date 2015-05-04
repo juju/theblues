@@ -224,13 +224,14 @@ class CharmStore(object):
         data = self._get(url)
         return data.json()['Id']
 
-    def search(self, text, includes=None, limit=None,
+    def search(self, text, includes=None, doc_type=None, limit=None,
                autocomplete=False, promulgated_only=False, tags=None,
                sort=None, owner=None, series=None):
         '''Search for entities in the charmstore.
 
         @param text The text to search for.
         @param includes What metadata to return in results (e.g. charm-config)
+        @param doc_type Filter to this type: bundle or charm
         @param limit Maximum number of results to return.
         @param autocomplete Whether to prefix/suffix match search terms.
         @param promulgated_only Whether to filter to only promulgated charms.
@@ -246,6 +247,8 @@ class CharmStore(object):
         if includes is not None:
             includes = '&'.join(['include=%s' % i for i in includes])
             url += '&%s' % includes
+        if doc_type is not None:
+            url += '&type=%s' % doc_type
         if limit is not None:
             url += '&limit=%s' % limit
         if autocomplete:
