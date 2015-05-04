@@ -145,3 +145,5 @@ notes to match the changelog you put in CHANGELOG.rst. Set the name to be the
 tag name.
 
 Upload the release tarball you created in the binaries field.
+
+.. _tags: https://github.com/juju/theblues/tags
