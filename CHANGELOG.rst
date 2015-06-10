@@ -4,6 +4,12 @@ History
 -------
 
 
+0.0.4 (2015-06-10)
+++++++++++++++++++
+
+* Support setting a timeout on charmstore requests.
+
+
 0.0.3 (2015-05-04)
 ++++++++++++++++++
 
