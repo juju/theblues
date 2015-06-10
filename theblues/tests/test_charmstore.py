@@ -5,6 +5,7 @@ from httmock import (
     urlmatch,
     )
 from mock import patch
+from requests.exceptions import Timeout
 
 from theblues.charmstore import (
     CharmStore,
@@ -252,6 +253,11 @@ def search_owner_200(url, request):
         'status_code': 200,
         'content': b'{"Results": [{"Id": "cs:foo/bar-0"}]}'
     }
+
+
+@urlmatch(path=SEARCH_PATH)
+def search_timeout(url, request):
+    raise Timeout
 
 
 @urlmatch(path=README_PATH)
@@ -557,3 +563,10 @@ class TestCharmStore(TestCase):
             self.cs.macaroons = "[macaroon1, macaroon2]"
             results = self.cs.search('foo')
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
+
+    def test_timeout(self):
+        with HTTMock(search_timeout):
+            with self.assertRaises(ServerError) as cm:
+                self.cs.search('foo')
+        message = cm.exception.args[0]
+        self.assertTrue('Request timed out' in message)

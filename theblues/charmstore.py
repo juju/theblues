@@ -1,7 +1,11 @@
 import logging
 
 import requests
-from requests.exceptions import HTTPError
+from requests.exceptions import (
+    HTTPError,
+    RequestException,
+    Timeout,
+    )
 
 from errors import (
     EntityNotFound,
@@ -17,16 +21,18 @@ except:
 class CharmStore(object):
     """A connection to the charmstore."""
 
-    def __init__(self, url, macaroons=None, verify=True):
+    def __init__(self, url, macaroons=None, timeout=None, verify=True):
         super(CharmStore, self).__init__()
         self.url = url
         self.verify = verify
+        self.timeout = timeout
         self.macaroons = macaroons
 
     def _get(self, url):
         cookies = dict([('macaroon-storefront', self.macaroons)])
         try:
-            response = requests.get(url, verify=self.verify, cookies=cookies)
+            response = requests.get(url, verify=self.verify, cookies=cookies,
+                                    timeout=self.timeout)
             response.raise_for_status()
             return response
         # XXX: To be reviewed when splitting the library.
@@ -46,7 +52,12 @@ class CharmStore(object):
                 raise ServerError(exc.response.status_code,
                                   exc.response.text,
                                   message)
-        except requests.exceptions.RequestException as exc:
+        except Timeout:
+            message = 'Request timed out: {url} timeout: {timeout}'
+            message = message.format(url=url, timeout=self.timeout)
+            logging.error(message)
+            raise ServerError(message)
+        except RequestException as exc:
             message = ('Error during request: {url} '
                        'message: {message}').format(
                            url=url,
@@ -298,7 +309,7 @@ class CharmStore(object):
                'include=charm-metadata&include=stats' +
                '&include=extra-info&include=bundle-unit-count' +
                '&limit=1000' + request)
-        data = requests.get(url, verify=self.verify)
+        data = self._get(url)
         return data.json().values()
 
     def debug(self):
