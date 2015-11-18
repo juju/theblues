@@ -7,7 +7,7 @@ from requests.exceptions import (
     Timeout,
     )
 
-from errors import (
+from .errors import (
     EntityNotFound,
     ServerError,
     )
