@@ -22,4 +22,4 @@ Feedback
 ========
 
 If you encounter any errors or problems with **theblues**, please let me know!
-Open an Issue at the GitHub http://github.com/juju/theblues main repository.
+Open an Issue at the GitHub https://github.com/juju/theblues main repository.
