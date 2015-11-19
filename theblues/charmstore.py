@@ -7,7 +7,7 @@ from requests.exceptions import (
     Timeout,
     )
 
-from errors import (
+from .errors import (
     EntityNotFound,
     ServerError,
     )
@@ -175,7 +175,8 @@ class CharmStore(object):
         return '%s/%s/archive/%s' % (self.url, entity_id, filename)
 
     def files(self, entity_id, manifest=None, filename=None, read_file=False):
-        '''Get the files or file contents of a file for an entity.
+        '''
+        Get the files or file contents of a file for an entity.
 
         If all files are requested, a dictionary of filenames and urls for the
         files in the archive are returned.
@@ -188,11 +189,11 @@ class CharmStore(object):
 
         @param entity_id The id of the entity to get files for
         @param manifest The manifest of files for the entity. Providing this
-            reduces queries; if not provided, the manifest is looked up in the
-            charmstore.
+        reduces queries; if not provided, the manifest is looked up in the
+        charmstore.
         @param filename The name of the file in the archive to get.
         @param read_file Whether to get the url for the file or the file
-            contents.
+        contents.
         '''
         if manifest is None:
             manifest_url = '%s/%s/meta/manifest' % (self.url, entity_id)
@@ -238,7 +239,8 @@ class CharmStore(object):
     def search(self, text, includes=None, doc_type=None, limit=None,
                autocomplete=False, promulgated_only=False, tags=None,
                sort=None, owner=None, series=None):
-        '''Search for entities in the charmstore.
+        '''
+        Search for entities in the charmstore.
 
         @param text The text to search for.
         @param includes What metadata to return in results (e.g. charm-config)
@@ -248,11 +250,11 @@ class CharmStore(object):
         @param promulgated_only Whether to filter to only promulgated charms.
         @param tags The tags to filter; can be a list of tags or a single tag.
         @param sort Sorting the result based on the sort string provided
-               which can be name, author, series and - in front for descending
+        which can be name, author, series and - in front for descending
         @param owner Optional owner. If provided, search results will only
-               include entities that owner can view.
+        include entities that owner can view.
         @param series The series to filter; can be a list of series or a
-               single series.
+        single series.
         '''
         url = '%s/search?text=%s' % (self.url, quote(text))
         if includes is not None:
