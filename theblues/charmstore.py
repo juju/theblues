@@ -91,6 +91,7 @@ class CharmStore(object):
             'bundles-containing',
             'charm-config',
             'charm-metadata',
+            'common-info',
             'extra-info',
             'revision-info',
             'stats'
