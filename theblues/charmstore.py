@@ -268,8 +268,8 @@ class CharmStore(object):
         if autocomplete:
             url += '&autocomplete=1'
         if promulgated_only:
-            url += '&owner='
-        elif owner is not None:
+            url += '&promulgated=1'
+        if owner is not None:
             url += '&owner=' + owner
         if tags is not None:
             if type(tags) is list:
@@ -281,6 +281,65 @@ class CharmStore(object):
             url += '&series=%s' % series
         if sort is not None:
             url += '&sort=%s' % sort
+        data = self._get(url)
+        return data.json()['Results']
+
+    def list(self, includes=None, doc_type=None, promulgated_only=False,
+             sort=None, owner=None, series=None):
+        '''
+        List entities in the charmstore.
+
+        @param includes What metadata to return in results (e.g. charm-config)
+        @param doc_type Filter to this type: bundle or charm
+        @param promulgated_only Whether to filter to only promulgated charms.
+        @param sort Sorting the result based on the sort string provided
+        which can be name, author, series and - in front for descending
+        @param owner Optional owner. If provided, search results will only
+        include entities that owner can view.
+        @param series The series to filter; can be a list of series or a
+        single series.
+        '''
+        url = '%s/list' % (self.url)
+        first = True
+        if includes is not None:
+            includes = '&'.join(['include=%s' % i for i in includes])
+            if first:
+                url += '?%s' % includes
+                first = False
+            else:
+                url += '&%s' % includes
+        if doc_type is not None:
+            if first:
+                url += '?type=%s' % doc_type
+                first = False
+            else:
+                url += '&type=%s' % doc_type
+        if promulgated_only:
+            if first:
+                url += '?promulgated=1'
+                first = False
+            else:
+                url += '&promulgated=1'
+        if owner is not None:
+            if first:
+                url += '?owner=' + owner
+                first = False
+            else:
+                url += '&owner=' + owner
+        if series is not None:
+            if type(series) is list:
+                series = ','.join(series)
+            if first:
+                url += '?series=%s' % series
+                first = False
+            else:
+                url += '&series=%s' % series
+        if sort is not None:
+            if first:
+                url += '?sort=%s' % sort
+                first = False
+            else:
+                url += '&sort=%s' % sort
         data = self._get(url)
         return data.json()['Results']
 
