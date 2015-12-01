@@ -27,6 +27,7 @@ FILE_PATH = '/%s/archive/%s' % (SAMPLE_CHARM, SAMPLE_FILE)
 ID_PATH = '.*/meta/any'
 README_PATH = '/%s/readme' % SAMPLE_CHARM
 SEARCH_PATH = '^/search.*'
+LIST_PATH = '^/list.*'
 DEBUG_PATH = '/debug/status'
 MACAROON_PATH = '/macaroon'
 ICON_PATH = '/%s/icon.svg' % SAMPLE_CHARM
@@ -101,7 +102,15 @@ def debug_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_200(url, request):
-    expected = 'text=foo'
+    return return_200(url, 'text=foo')
+
+
+@urlmatch(path=LIST_PATH)
+def list_200(url, request):
+    return return_200(url, '')
+
+
+def return_200(url, expected):
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -123,7 +132,7 @@ def search_200_escaped(url, request):
         }
 
 
-@urlmatch(path=SEARCH_PATH)
+@urlmatch(path='({})|({})'.format(SEARCH_PATH, LIST_PATH))
 def search_200_with_macaroon(url, request):
     expected = "[macaroon1, macaroon2]"
     macaroons = request._cookies.get('macaroon-storefront')
@@ -138,7 +147,7 @@ def search_200_with_macaroon(url, request):
         }
 
 
-@urlmatch(path=SEARCH_PATH)
+@urlmatch(path='({})|({})'.format(SEARCH_PATH, LIST_PATH))
 def search_400(url, request):
     return {
         'status_code': 400,
@@ -161,7 +170,15 @@ def search_limit_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_type_200(url, request):
-    expected = 'text=foo&type=bundle'
+    return return_type_200(url, 'type=bundle&text=foo')
+
+
+@urlmatch(path=LIST_PATH)
+def list_type_200(url, request):
+    return return_type_200(url, 'type=bundle')
+
+
+def return_type_200(url, expected):
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -173,7 +190,19 @@ def search_type_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_includes_200(url, request):
-    expected = 'text=foo&include=archive-size&include=charm-metadata'
+    return return_includes_200(
+        url,
+        'include=archive-size&include=charm-metadata&text=foo')
+
+
+@urlmatch(path=LIST_PATH)
+def list_includes_200(url, request):
+    return return_includes_200(
+        url,
+        'include=archive-size&include=charm-metadata')
+
+
+def return_includes_200(url, expected):
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -197,7 +226,7 @@ def search_tags_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_multiple_tags_200(url, request):
-    expected = 'text=foo&tags=databases,applications'
+    expected = 'text=foo&tags=databases%2Capplications'
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -209,7 +238,15 @@ def search_multiple_tags_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_series_200(url, request):
-    expected = 'text=foo&series=precise'
+    return return_series_200(url, 'series=precise&text=foo')
+
+
+@urlmatch(path=LIST_PATH)
+def list_series_200(url, request):
+    return return_series_200(url, 'series=precise')
+
+
+def return_series_200(url, expected):
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -221,7 +258,7 @@ def search_series_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_multiple_series_200(url, request):
-    expected = 'text=foo&series=trusty,precise'
+    expected = 'series=trusty%2Cprecise&text=foo'
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -243,9 +280,10 @@ def search_autocomplete_200(url, request):
         }
 
 
-@urlmatch(path=SEARCH_PATH)
+@urlmatch(path='({})|({})'.format(SEARCH_PATH, LIST_PATH))
 def search_owner_200(url, request):
-    expected = 'text=&owner=hatch'
+    expected = 'owner=hatch'
+
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -430,6 +468,11 @@ class TestCharmStore(TestCase):
             results = self.cs.search('foo')
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
 
+    def test_list(self):
+        with HTTMock(list_200):
+            results = self.cs.list()
+            self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
+
     def test_search_escaped(self):
         with HTTMock(search_200_escaped):
             results = self.cs.search('&foo')
@@ -443,6 +486,17 @@ class TestCharmStore(TestCase):
         self.assertEqual(400, cm.exception.args[0])
         log_mocked.assert_called_with(
             'Error during request: http://example.com/search?text=foo '
+            'status code:(400) message: '
+            '{"Message": "invalid parameter: user", "Code": "bad request"}')
+
+    def test_list_400(self):
+        with patch('theblues.charmstore.logging.error') as log_mocked:
+            with HTTMock(search_400):
+                with self.assertRaises(ServerError) as cm:
+                    self.cs.list()
+        self.assertEqual(400, cm.exception.args[0])
+        log_mocked.assert_called_with(
+            'Error during request: http://example.com/list '
             'status code:(400) message: '
             '{"Message": "invalid parameter: user", "Code": "bad request"}')
 
@@ -463,9 +517,19 @@ class TestCharmStore(TestCase):
                 'foo', includes=['archive-size', 'charm-metadata'])
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
 
+    def test_list_includes(self):
+        with HTTMock(list_includes_200):
+            results = self.cs.list(includes=['archive-size', 'charm-metadata'])
+            self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
+
     def test_search_type(self):
         with HTTMock(search_type_200):
             results = self.cs.search('foo', doc_type='bundle')
+            self.assertEqual([{'Id': 'cs:bundle/mediawiki-single-7'}], results)
+
+    def test_list_type(self):
+        with HTTMock(list_type_200):
+            results = self.cs.list(doc_type='bundle')
             self.assertEqual([{'Id': 'cs:bundle/mediawiki-single-7'}], results)
 
     def test_search_tags(self):
@@ -483,6 +547,11 @@ class TestCharmStore(TestCase):
             results = self.cs.search('foo', series='precise')
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
 
+    def test_list_series(self):
+        with HTTMock(list_series_200):
+            results = self.cs.list(series='precise')
+            self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
+
     def test_search_multiple_series(self):
         with HTTMock(search_multiple_series_200):
             results = self.cs.search('foo', series=['trusty', 'precise'])
@@ -491,6 +560,11 @@ class TestCharmStore(TestCase):
     def test_search_owner(self):
         with HTTMock(search_owner_200):
             results = self.cs.search('', owner='hatch')
+            self.assertEqual([{"Id": "cs:foo/bar-0"}], results)
+
+    def test_list_owner(self):
+        with HTTMock(search_owner_200):
+            results = self.cs.list(owner='hatch')
             self.assertEqual([{"Id": "cs:foo/bar-0"}], results)
 
     def test_charm_icon_url(self):
@@ -562,6 +636,12 @@ class TestCharmStore(TestCase):
         with HTTMock(search_200_with_macaroon):
             self.cs.macaroons = "[macaroon1, macaroon2]"
             results = self.cs.search('foo')
+            self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
+
+    def test_list_with_macaroon(self):
+        with HTTMock(search_200_with_macaroon):
+            self.cs.macaroons = "[macaroon1, macaroon2]"
+            results = self.cs.list()
             self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
 
     def test_timeout(self):

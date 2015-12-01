@@ -13,9 +13,9 @@ from .errors import (
     )
 
 try:
-    from urllib import quote
+    from urllib import urlencode
 except:
-    from urllib.parse import quote
+    from urllib.parse import urlencode
 
 
 class CharmStore(object):
@@ -244,45 +244,93 @@ class CharmStore(object):
         Search for entities in the charmstore.
 
         @param text The text to search for.
-        @param includes What metadata to return in results (e.g. charm-config)
-        @param doc_type Filter to this type: bundle or charm
+        @param includes What metadata to return in results (e.g. charm-config).
+        @param doc_type Filter to this type: bundle or charm.
         @param limit Maximum number of results to return.
         @param autocomplete Whether to prefix/suffix match search terms.
         @param promulgated_only Whether to filter to only promulgated charms.
         @param tags The tags to filter; can be a list of tags or a single tag.
         @param sort Sorting the result based on the sort string provided
-        which can be name, author, series and - in front for descending
+        which can be name, author, series and - in front for descending.
         @param owner Optional owner. If provided, search results will only
         include entities that owner can view.
         @param series The series to filter; can be a list of series or a
         single series.
         '''
-        url = '%s/search?text=%s' % (self.url, quote(text))
-        if includes is not None:
-            includes = '&'.join(['include=%s' % i for i in includes])
-            url += '&%s' % includes
-        if doc_type is not None:
-            url += '&type=%s' % doc_type
+        queries = self._common_query_parameters(doc_type, includes, owner,
+                                                promulgated_only, series, sort)
+        if len(text):
+            queries.append(('text', text))
         if limit is not None:
-            url += '&limit=%s' % limit
+            queries.append(('limit', limit))
         if autocomplete:
-            url += '&autocomplete=1'
-        if promulgated_only:
-            url += '&owner='
-        elif owner is not None:
-            url += '&owner=' + owner
+            queries.append(('autocomplete', 1))
         if tags is not None:
             if type(tags) is list:
                 tags = ','.join(tags)
-            url += '&tags=%s' % tags
+            queries.append(('tags', tags))
+        if len(queries):
+            url = '{}/search?{}'.format(self.url, urlencode(queries))
+        else:
+            url = '{}/search'.format(self.url)
+        data = self._get(url)
+        return data.json()['Results']
+
+    def list(self, includes=None, doc_type=None, promulgated_only=False,
+             sort=None, owner=None, series=None):
+        '''
+        List entities in the charmstore.
+
+        @param includes What metadata to return in results (e.g. charm-config).
+        @param doc_type Filter to this type: bundle or charm.
+        @param promulgated_only Whether to filter to only promulgated charms.
+        @param sort Sorting the result based on the sort string provided
+        which can be name, author, series and - in front for descending.
+        @param owner Optional owner. If provided, search results will only
+        include entities that owner can view.
+        @param series The series to filter; can be a list of series or a
+        single series.
+        '''
+        queries = self._common_query_parameters(doc_type, includes, owner,
+                                                promulgated_only, series, sort)
+        if len(queries):
+            url = '{}/list?{}'.format(self.url, urlencode(queries))
+        else:
+            url = '{}/list'.format(self.url)
+        data = self._get(url)
+        return data.json()['Results']
+
+    def _common_query_parameters(self, doc_type, includes, owner,
+                                 promulgated_only, series, sort):
+        '''
+        Extract common query parameters between search and list into slice.
+
+        @param includes What metadata to return in results (e.g. charm-config).
+        @param doc_type Filter to this type: bundle or charm.
+        @param promulgated_only Whether to filter to only promulgated charms.
+        @param sort Sorting the result based on the sort string provided
+        which can be name, author, series and - in front for descending.
+        @param owner Optional owner. If provided, search results will only
+        include entities that owner can view.
+        @param series The series to filter; can be a list of series or a
+        single series.
+        '''
+        queries = []
+        if includes is not None:
+            queries.extend([('include', include) for include in includes])
+        if doc_type is not None:
+            queries.append(('type', doc_type))
+        if promulgated_only:
+            queries.append(('promulgated', 1))
+        if owner is not None:
+            queries.append(('owner', owner))
         if series is not None:
             if type(series) is list:
                 series = ','.join(series)
-            url += '&series=%s' % series
+            queries.append(('series', series))
         if sort is not None:
-            url += '&sort=%s' % sort
-        data = self._get(url)
-        return data.json()['Results']
+            queries.append(('sort', sort))
+        return queries
 
     def fetch_related(self, ids):
         if not ids:
