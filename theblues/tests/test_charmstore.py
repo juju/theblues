@@ -170,7 +170,7 @@ def search_limit_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_type_200(url, request):
-    return return_type_200(url, 'text=foo&type=bundle')
+    return return_type_200(url, 'type=bundle&text=foo')
 
 
 @urlmatch(path=LIST_PATH)
@@ -192,7 +192,7 @@ def return_type_200(url, expected):
 def search_includes_200(url, request):
     return return_includes_200(
         url,
-        'text=foo&include=archive-size&include=charm-metadata')
+        'include=archive-size&include=charm-metadata&text=foo')
 
 
 @urlmatch(path=LIST_PATH)
@@ -226,7 +226,7 @@ def search_tags_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_multiple_tags_200(url, request):
-    expected = 'text=foo&tags=databases,applications'
+    expected = 'text=foo&tags=databases%2Capplications'
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -238,7 +238,7 @@ def search_multiple_tags_200(url, request):
 
 @urlmatch(path=SEARCH_PATH)
 def search_series_200(url, request):
-    return return_series_200(url, 'text=foo&series=precise')
+    return return_series_200(url, 'series=precise&text=foo')
 
 
 @urlmatch(path=LIST_PATH)
@@ -258,7 +258,7 @@ def return_series_200(url, expected):
 
 @urlmatch(path=SEARCH_PATH)
 def search_multiple_series_200(url, request):
-    expected = 'text=foo&series=trusty,precise'
+    expected = 'series=trusty%2Cprecise&text=foo'
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -280,17 +280,10 @@ def search_autocomplete_200(url, request):
         }
 
 
-@urlmatch(path=SEARCH_PATH)
+@urlmatch(path='({})|({})'.format(SEARCH_PATH, LIST_PATH))
 def search_owner_200(url, request):
-    return return_owner_200(url, 'text=&owner=hatch')
+    expected = 'owner=hatch'
 
-
-@urlmatch(path=LIST_PATH)
-def list_owner_200(url, request):
-    return return_owner_200(url, 'owner=hatch')
-
-
-def return_owner_200(url, expected):
     if url.query != expected:
         raise AssertionError(
             'Got wrong query string: %s vs %s' % (url.query, expected))
@@ -570,7 +563,7 @@ class TestCharmStore(TestCase):
             self.assertEqual([{"Id": "cs:foo/bar-0"}], results)
 
     def test_list_owner(self):
-        with HTTMock(list_owner_200):
+        with HTTMock(search_owner_200):
             results = self.cs.list(owner='hatch')
             self.assertEqual([{"Id": "cs:foo/bar-0"}], results)
 
