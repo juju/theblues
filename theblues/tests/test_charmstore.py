@@ -4,6 +4,7 @@ from httmock import (
     HTTMock,
     urlmatch,
     )
+from jujubundlelib import references
 from mock import patch
 from requests.exceptions import Timeout
 
@@ -371,9 +372,23 @@ class TestCharmStore(TestCase):
             data = self.cs.charm(SAMPLE_CHARM)
         self.assertEqual({'Meta': {'charm-metadata': {'exists': True}}}, data)
 
+    def test_entity_reference(self):
+        with HTTMock(entity_200):
+            data = self.cs.charm(
+                references.Reference.from_string(SAMPLE_CHARM))
+        self.assertEqual({'Meta': {'charm-metadata': {'exists': True}}}, data)
+
     def test_entities(self):
         with HTTMock(self.entities_response):
             response = self.cs.entities(['wordpress', 'mysql'])
+        self.assertEqual(
+            {u'wordpress': u'wordpress', u'mysql': u'mysql'}, response)
+
+    def test_entities_reference(self):
+        with HTTMock(self.entities_response):
+            response = self.cs.entities(
+                [references.Reference.from_string('wordpress'),
+                 references.Reference.from_string('mysql')])
         self.assertEqual(
             {u'wordpress': u'wordpress', u'mysql': u'mysql'}, response)
 
@@ -401,6 +416,12 @@ class TestCharmStore(TestCase):
             data = self.cs.config(SAMPLE_CHARM)
         self.assertEqual({'exists': True}, data)
 
+    def test_config_reference(self):
+        with HTTMock(config_200):
+            data = self.cs.config(
+                references.Reference.from_string(SAMPLE_CHARM))
+        self.assertEqual({'exists': True}, data)
+
     def test_config_error(self):
         with HTTMock(config_404):
             with self.assertRaises(EntityNotFound):
@@ -411,9 +432,27 @@ class TestCharmStore(TestCase):
             data = self.cs.archive_url(SAMPLE_CHARM)
         self.assertEqual(u'http://example.com/precise/mysql-1/archive', data)
 
+    def test_archive_url_reference(self):
+        with HTTMock(manifest_200):
+            data = self.cs.archive_url(
+                references.Reference.from_string(SAMPLE_CHARM))
+        self.assertEqual(u'http://example.com/precise/mysql-1/archive', data)
+
     def test_file_good(self):
         with HTTMock(manifest_200):
             data = self.cs.files(SAMPLE_CHARM)
+        self.assertEqual({
+            u'icon.svg':
+            u'http://example.com/precise/mysql-1/archive/icon.svg',
+            u'README.md':
+            u'http://example.com/precise/mysql-1/archive/README.md'
+            },
+            data)
+
+    def test_file_good_reference(self):
+        with HTTMock(manifest_200):
+            data = self.cs.files(
+                references.Reference.from_string(SAMPLE_CHARM))
         self.assertEqual({
             u'icon.svg':
             u'http://example.com/precise/mysql-1/archive/icon.svg',
@@ -434,6 +473,15 @@ class TestCharmStore(TestCase):
             u'http://example.com/precise/mysql-1/archive/README.md',
             data)
 
+    def test_file_one_file_reference(self):
+        with HTTMock(manifest_200):
+            data = self.cs.files(
+                references.Reference.from_string(SAMPLE_CHARM),
+                filename='README.md')
+        self.assertEqual(
+            u'http://example.com/precise/mysql-1/archive/README.md',
+            data)
+
     def test_file_one_file_error(self):
         with HTTMock(manifest_200):
             with self.assertRaises(EntityNotFound):
@@ -446,6 +494,15 @@ class TestCharmStore(TestCase):
                     SAMPLE_CHARM, filename='README.md', read_file=True)
         self.assertEqual('This is a file.', data)
 
+    def test_file_read_file_reference(self):
+        with HTTMock(manifest_200):
+            with HTTMock(file_200):
+                data = self.cs.files(
+                    references.Reference.from_string(SAMPLE_CHARM),
+                    filename='README.md',
+                    read_file=True)
+        self.assertEqual('This is a file.', data)
+
     def test_file_read_file_error(self):
         with HTTMock(manifest_200):
             with HTTMock(file_404):
@@ -456,6 +513,12 @@ class TestCharmStore(TestCase):
     def test_entityId(self):
         with HTTMock(id_200):
             charm_id = self.cs.entityId('bar')
+            self.assertEqual('foo/bar', charm_id)
+
+    def test_entityId_reference(self):
+        with HTTMock(id_200):
+            charm_id = self.cs.entityId(
+                references.Reference.from_string('bar'))
             self.assertEqual('foo/bar', charm_id)
 
     def test_ids_no_charm(self):
@@ -572,10 +635,23 @@ class TestCharmStore(TestCase):
         url = self.cs.charm_icon_url(entity_id)
         self.assertEqual('http://example.com/mongodb/icon.svg', url)
 
+    def test_charm_icon_url_reference(self):
+        entity_id = 'mongodb'
+        url = self.cs.charm_icon_url(
+            references.Reference.from_string(entity_id))
+        self.assertEqual('http://example.com/mongodb/icon.svg', url)
+
     def test_charm_icon_ok(self):
         entity_id = 'precise/mysql-1'
         with HTTMock(icon_200):
             icon = self.cs.charm_icon(entity_id)
+        self.assertEqual('icon', icon)
+
+    def test_charm_icon_ok_reference(self):
+        entity_id = 'precise/mysql-1'
+        with HTTMock(icon_200):
+            icon = self.cs.charm_icon(
+                references.Reference.from_string(entity_id))
         self.assertEqual('icon', icon)
 
     def test_charm_icon_bad(self):
@@ -587,6 +663,12 @@ class TestCharmStore(TestCase):
     def test_bundle_visualization_url(self):
         entity_id = 'mongodb-cluster'
         url = self.cs.bundle_visualization_url(entity_id)
+        self.assertEqual('http://example.com/mongodb-cluster/diagram.svg', url)
+
+    def test_bundle_visualization_url_reference(self):
+        entity_id = 'mongodb-cluster'
+        url = self.cs.bundle_visualization_url(
+            references.Reference.from_string(entity_id))
         self.assertEqual('http://example.com/mongodb-cluster/diagram.svg', url)
 
     def test_bundle_visualization_ok(self):
@@ -601,9 +683,22 @@ class TestCharmStore(TestCase):
             with self.assertRaises(EntityNotFound):
                 self.cs.bundle_visualization(entity_id)
 
+    def test_bundle_visualization_reference(self):
+        entity_id = 'mongodb-cluster'
+        with HTTMock(diagram_200):
+            diagram = self.cs.bundle_visualization(
+                references.Reference.from_string(entity_id))
+        self.assertEqual('diagram', diagram)
+
     def test_entity_readme_url(self):
         entity_id = 'mongodb-cluster'
         url = self.cs.entity_readme_url(entity_id)
+        self.assertEqual('http://example.com/mongodb-cluster/readme', url)
+
+    def test_entity_readme_url_reference(self):
+        entity_id = 'mongodb-cluster'
+        url = self.cs.entity_readme_url(
+            references.Reference.from_string(entity_id))
         self.assertEqual('http://example.com/mongodb-cluster/readme', url)
 
     def test_readme_not_found(self):
@@ -614,6 +709,12 @@ class TestCharmStore(TestCase):
     def test_readme_content(self):
         with HTTMock(readme_200):
             content = self.cs.entity_readme_content('precise/mysql-1')
+            self.assertEqual('This is the readme', content)
+
+    def test_readme_content_reference(self):
+        with HTTMock(readme_200):
+            content = self.cs.entity_readme_content(
+                references.Reference.from_string('precise/mysql-1'))
             self.assertEqual('This is the readme', content)
 
     def test_debug(self):

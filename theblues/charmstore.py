@@ -17,6 +17,8 @@ try:
 except:
     from urllib.parse import urlencode
 
+from jujubundlelib import references
+
 
 class CharmStore(object):
     """A connection to the charmstore."""
@@ -70,10 +72,14 @@ class CharmStore(object):
     def _meta(self, entity_id, includes):
         '''Retrieve metadata about an entity in the charmstore.
 
-        @param entity_id The ID of the entity to get.
+        @param entity_id The ID of the entity to get either a reference
+               or a string
         @param includes Which metadata fields to include in the response.
         '''
-        url = '%s/%s/meta/any?' % (self.url, entity_id)
+        if isinstance(entity_id, references.Reference):
+            url = '%s/%s/meta/any?' % (self.url, entity_id.path())
+        else:
+            url = '%s/%s/meta/any?' % (self.url, entity_id)
         for include in includes:
             url += 'include=%s&' % include
         data = self._get(url)
@@ -82,7 +88,7 @@ class CharmStore(object):
     def entity(self, entity_id, get_files=False):
         '''Get the default data for any entity (e.g. bundle or charm).
 
-        @param entity_id The entity's id.
+        @param entity_id The entity's id either as a reference or a string
         '''
         includes = [
             'bundle-machine-count',
@@ -103,11 +109,14 @@ class CharmStore(object):
     def entities(self, entity_ids):
         '''Get the default data for entities.
 
-        @param entity_ids A list of entity id strings.
+        @param entity_ids A list of entity id strings or references.
         '''
         url = '%s/meta/any?include=id&' % self.url
         for entity_id in entity_ids:
-            url += 'id=%s&' % entity_id
+            if isinstance(entity_id, references.Reference):
+                url += 'id=%s&' % entity_id.path()
+            else:
+                url += 'id=%s&' % entity_id
         # Remove the trailing '&' from the URL.
         url = url[:-1]
         data = self._get(url)
@@ -133,7 +142,10 @@ class CharmStore(object):
         @param charm_id The ID of the charm, bundle icons are not currently
         supported.
         @return url string for the path to the icon.'''
-        url = '%s/%s/icon.svg' % (self.url, charm_id)
+        if isinstance(charm_id, references.Reference):
+            url = '%s/%s/icon.svg' % (self.url, charm_id.path())
+        else:
+            url = '%s/%s/icon.svg' % (self.url, charm_id)
         return url
 
     def charm_icon(self, charm_id):
@@ -147,12 +159,18 @@ class CharmStore(object):
         return response.content
 
     def bundle_visualization_url(self, bundle_id):
-        url = '%s/%s/diagram.svg' % (self.url, bundle_id)
+        if isinstance(bundle_id, references.Reference):
+            url = '%s/%s/diagram.svg' % (self.url, bundle_id.path())
+        else:
+            url = '%s/%s/diagram.svg' % (self.url, bundle_id)
         return url
 
     def entity_readme_url(self, entity_id):
         '''Generate the url path for the readme of the entity.'''
-        url = '%s/%s/readme' % (self.url, entity_id)
+        if isinstance(entity_id, references.Reference):
+            url = '%s/%s/readme' % (self.url, entity_id.path())
+        else:
+            url = '%s/%s/readme' % (self.url, entity_id)
         return url
 
     def entity_readme_content(self, entity_id):
@@ -163,9 +181,13 @@ class CharmStore(object):
     def archive_url(self, entity_id):
         '''Generate a URL for the archive.
 
-        @param entity_id The ID of the entity to look up.
+        @param entity_id The ID of the entity to look up as a string
+               or reference.
         '''
-        return '%s/%s/archive' % (self.url, entity_id)
+        if isinstance(entity_id, references.Reference):
+            return '%s/%s/archive' % (self.url, entity_id.path())
+        else:
+            return '%s/%s/archive' % (self.url, entity_id)
 
     def file_url(self, entity_id, filename):
         '''Generate a URL for a file in an archive without requesting it.
@@ -173,7 +195,10 @@ class CharmStore(object):
         @param entity_id The ID of the entity to look up.
         @param filename The name of the file in the archive.
         '''
-        return '%s/%s/archive/%s' % (self.url, entity_id, filename)
+        if isinstance(entity_id, references.Reference):
+            return '%s/%s/archive/%s' % (self.url, entity_id.path(), filename)
+        else:
+            return '%s/%s/archive/%s' % (self.url, entity_id, filename)
 
     def files(self, entity_id, manifest=None, filename=None, read_file=False):
         '''
@@ -197,13 +222,20 @@ class CharmStore(object):
         contents.
         '''
         if manifest is None:
-            manifest_url = '%s/%s/meta/manifest' % (self.url, entity_id)
+            if isinstance(entity_id, references.Reference):
+                manifest_url = '%s/%s/meta/manifest' % (self.url,
+                                                        entity_id.path())
+            else:
+                manifest_url = '%s/%s/meta/manifest' % (self.url, entity_id)
             manifest = self._get(manifest_url)
             manifest = manifest.json()
         files = {}
         for f in manifest:
             manifest_name = f['Name']
-            file_url = self.file_url(entity_id, manifest_name)
+            if isinstance(entity_id, references.Reference):
+                file_url = self.file_url(entity_id.path(), manifest_name)
+            else:
+                file_url = self.file_url(entity_id, manifest_name)
             files[manifest_name] = file_url
 
         if filename:
@@ -223,7 +255,10 @@ class CharmStore(object):
 
         @param charm_id The charm's id.
         '''
-        url = '%s/%s/meta/charm-config' % (self.url, charm_id)
+        if isinstance(charm_id, references.Reference):
+            url = '%s/%s/meta/charm-config' % (self.url, charm_id.path())
+        else:
+            url = '%s/%s/meta/charm-config' % (self.url, charm_id)
         data = self._get(url)
         return data.json()
 
@@ -233,7 +268,10 @@ class CharmStore(object):
         Raises EntityNotFound if partial cannot be resolved.
         @param partial The partial id (e.g. mysql, precise/mysql).
         '''
-        url = '%s/%s/meta/any' % (self.url, partial)
+        if isinstance(partial, references.Reference):
+            url = '%s/%s/meta/any' % (self.url, partial.path())
+        else:
+            url = '%s/%s/meta/any' % (self.url, partial)
         data = self._get(url)
         return data.json()['Id']
 
