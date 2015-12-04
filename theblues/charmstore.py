@@ -17,8 +17,6 @@ try:
 except:
     from urllib.parse import urlencode
 
-from jujubundlelib import references
-
 
 class CharmStore(object):
     """A connection to the charmstore."""
@@ -388,7 +386,8 @@ def _get_path(entity_id):
           to get.
     @returns: entity_id as a string
     '''
-    if isinstance(entity_id, references.Reference):
-        return entity_id.path()
-    else:
-        return entity_id
+    try:
+        path = entity_id.path()
+    except AttributeError:
+        path = entity_id
+    return path
