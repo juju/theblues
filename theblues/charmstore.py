@@ -70,10 +70,11 @@ class CharmStore(object):
     def _meta(self, entity_id, includes):
         '''Retrieve metadata about an entity in the charmstore.
 
-        @param entity_id The ID of the entity to get.
+        @param entity_id The ID either a reference or a string of the entity
+               to get.
         @param includes Which metadata fields to include in the response.
         '''
-        url = '%s/%s/meta/any?' % (self.url, entity_id)
+        url = '%s/%s/meta/any?' % (self.url, _get_path(entity_id))
         for include in includes:
             url += 'include=%s&' % include
         data = self._get(url)
@@ -82,7 +83,7 @@ class CharmStore(object):
     def entity(self, entity_id, get_files=False):
         '''Get the default data for any entity (e.g. bundle or charm).
 
-        @param entity_id The entity's id.
+        @param entity_id The entity's id either as a reference or a string
         '''
         includes = [
             'bundle-machine-count',
@@ -94,7 +95,8 @@ class CharmStore(object):
             'common-info',
             'extra-info',
             'revision-info',
-            'stats'
+            'stats',
+            'supported-series'
         ]
         if get_files:
             includes.append('manifest')
@@ -103,11 +105,11 @@ class CharmStore(object):
     def entities(self, entity_ids):
         '''Get the default data for entities.
 
-        @param entity_ids A list of entity id strings.
+        @param entity_ids A list of entity ids either as strings or references.
         '''
         url = '%s/meta/any?include=id&' % self.url
         for entity_id in entity_ids:
-            url += 'id=%s&' % entity_id
+            url += 'id=%s&' % _get_path(entity_id)
         # Remove the trailing '&' from the URL.
         url = url[:-1]
         data = self._get(url)
@@ -133,8 +135,7 @@ class CharmStore(object):
         @param charm_id The ID of the charm, bundle icons are not currently
         supported.
         @return url string for the path to the icon.'''
-        url = '%s/%s/icon.svg' % (self.url, charm_id)
-        return url
+        return '%s/%s/icon.svg' % (self.url, _get_path(charm_id))
 
     def charm_icon(self, charm_id):
         url = self.charm_icon_url(charm_id)
@@ -147,13 +148,11 @@ class CharmStore(object):
         return response.content
 
     def bundle_visualization_url(self, bundle_id):
-        url = '%s/%s/diagram.svg' % (self.url, bundle_id)
-        return url
+        return '%s/%s/diagram.svg' % (self.url, _get_path(bundle_id))
 
     def entity_readme_url(self, entity_id):
         '''Generate the url path for the readme of the entity.'''
-        url = '%s/%s/readme' % (self.url, entity_id)
-        return url
+        return '%s/%s/readme' % (self.url, _get_path(entity_id))
 
     def entity_readme_content(self, entity_id):
         readme_url = self.entity_readme_url(entity_id)
@@ -163,9 +162,10 @@ class CharmStore(object):
     def archive_url(self, entity_id):
         '''Generate a URL for the archive.
 
-        @param entity_id The ID of the entity to look up.
+        @param entity_id The ID of the entity to look up as a string
+               or reference.
         '''
-        return '%s/%s/archive' % (self.url, entity_id)
+        return '%s/%s/archive' % (self.url, _get_path(entity_id))
 
     def file_url(self, entity_id, filename):
         '''Generate a URL for a file in an archive without requesting it.
@@ -173,7 +173,7 @@ class CharmStore(object):
         @param entity_id The ID of the entity to look up.
         @param filename The name of the file in the archive.
         '''
-        return '%s/%s/archive/%s' % (self.url, entity_id, filename)
+        return '%s/%s/archive/%s' % (self.url, _get_path(entity_id), filename)
 
     def files(self, entity_id, manifest=None, filename=None, read_file=False):
         '''
@@ -197,13 +197,14 @@ class CharmStore(object):
         contents.
         '''
         if manifest is None:
-            manifest_url = '%s/%s/meta/manifest' % (self.url, entity_id)
+            manifest_url = '%s/%s/meta/manifest' % (self.url,
+                                                    _get_path(entity_id))
             manifest = self._get(manifest_url)
             manifest = manifest.json()
         files = {}
         for f in manifest:
             manifest_name = f['Name']
-            file_url = self.file_url(entity_id, manifest_name)
+            file_url = self.file_url(_get_path(entity_id), manifest_name)
             files[manifest_name] = file_url
 
         if filename:
@@ -223,7 +224,7 @@ class CharmStore(object):
 
         @param charm_id The charm's id.
         '''
-        url = '%s/%s/meta/charm-config' % (self.url, charm_id)
+        url = '%s/%s/meta/charm-config' % (self.url, _get_path(charm_id))
         data = self._get(url)
         return data.json()
 
@@ -233,7 +234,7 @@ class CharmStore(object):
         Raises EntityNotFound if partial cannot be resolved.
         @param partial The partial id (e.g. mysql, precise/mysql).
         '''
-        url = '%s/%s/meta/any' % (self.url, partial)
+        url = '%s/%s/meta/any' % (self.url, _get_path(partial))
         data = self._get(url)
         return data.json()['Id']
 
@@ -338,7 +339,8 @@ class CharmStore(object):
         meta = '&id='.join(id['Id'] for id in ids)
         url = ('{url}/meta/any?id={meta}'
                '&include=bundle-metadata&include=stats'
-               '&include=extra-info&include=bundle-unit-count').format(
+               '&include=supported-series&include=extra-info'
+               '&include=bundle-unit-count').format(
                    url=self.url, meta=meta)
         data = self._get(url)
         return data.json().values()
@@ -357,8 +359,8 @@ class CharmStore(object):
         else:
             request = '&provides=' + interface
         url = (self.url + '/search?' +
-               'include=charm-metadata&include=stats' +
-               '&include=extra-info&include=bundle-unit-count' +
+               'include=charm-metadata&include=stats&include=supported-series'
+               '&include=extra-info&include=bundle-unit-count'
                '&limit=1000' + request)
         data = self._get(url)
         return data.json().values()
@@ -375,3 +377,17 @@ class CharmStore(object):
             charmstore_url=self.url)
         response = self._get(url)
         return response.text
+
+
+def _get_path(entity_id):
+    '''Get the entity_id as a string if it is a Reference.
+
+    @param entity_id The ID either a reference or a string of the entity
+          to get.
+    @returns: entity_id as a string
+    '''
+    try:
+        path = entity_id.path()
+    except AttributeError:
+        path = entity_id
+    return path
