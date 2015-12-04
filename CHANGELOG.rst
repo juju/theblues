@@ -4,6 +4,13 @@ History
 -------
 
 
+0.1.0 (2015-12-04)
+++++++++++++++++++
+
+* Use Reference from jujubundlelib as a parameter.
+* Add list endpoint.
+
+
 0.0.5 (2015-11-20)
 ++++++++++++++++++
 
