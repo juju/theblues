@@ -29,7 +29,10 @@ class CharmStore(object):
         self.macaroons = macaroons
 
     def _get(self, url):
-        cookies = dict([('macaroon-storefront', self.macaroons)])
+        if self.macaroons is None or len(self.macaroons) == 0:
+            cookies = {}
+        else:
+            cookies = dict([('macaroon-storefront', self.macaroons)])
         try:
             response = requests.get(url, verify=self.verify, cookies=cookies,
                                     timeout=self.timeout)
