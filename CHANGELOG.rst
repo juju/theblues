@@ -7,6 +7,12 @@ History
 0.1.0 (2015-12-04)
 ++++++++++++++++++
 
+* Fix for empty macaroon cookie.
+
+
+0.1.1 (2016-01-25)
+++++++++++++++++++
+
 * Use Reference from jujubundlelib as a parameter.
 * Add list endpoint.
 
