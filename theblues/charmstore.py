@@ -70,23 +70,32 @@ class CharmStore(object):
                               exc.args[0][1].strerror,
                               exc.message)
 
-    def _meta(self, entity_id, includes):
+    def _meta(self, entity_id, includes, channel=None):
         '''Retrieve metadata about an entity in the charmstore.
 
         @param entity_id The ID either a reference or a string of the entity
                to get.
         @param includes Which metadata fields to include in the response.
+        @param channel optional channel information.
         '''
-        url = '%s/%s/meta/any?' % (self.url, _get_path(entity_id))
-        for include in includes:
-            url += 'include=%s&' % include
+        queries = []
+        if includes is not None:
+            queries.extend([('include', include) for include in includes])
+        if channel is not None:
+            queries.append(('channel', channel))
+        if len(queries):
+            url = '{}/{}/meta/any?{}'.format(self.url, _get_path(entity_id),
+                                             urlencode(queries))
+        else:
+            url = '{}/{}/meta/any'.format(self.url, _get_path(entity_id))
         data = self._get(url)
         return data.json()
 
-    def entity(self, entity_id, get_files=False):
+    def entity(self, entity_id, get_files=False, channel=None):
         '''Get the default data for any entity (e.g. bundle or charm).
 
         @param entity_id The entity's id either as a reference or a string
+        @param channel optional channel information.
         '''
         includes = [
             'bundle-machine-count',
@@ -103,7 +112,7 @@ class CharmStore(object):
         ]
         if get_files:
             includes.append('manifest')
-        return self._meta(entity_id, includes)
+        return self._meta(entity_id, includes, channel=channel)
 
     def entities(self, entity_ids):
         '''Get the default data for entities.
@@ -118,67 +127,90 @@ class CharmStore(object):
         data = self._get(url)
         return data.json()
 
-    def bundle(self, bundle_id):
+    def bundle(self, bundle_id, channel=None):
         '''Get the default data for a bundle.
 
         @param bundle_id The bundle's id.
+        @param channel optional channel information.
         '''
-        return self.entity(bundle_id, get_files=True)
+        return self.entity(bundle_id, get_files=True, channel=channel)
 
-    def charm(self, charm_id):
+    def charm(self, charm_id, channel=None):
         '''Get the default data for a charm.
 
         @param charm_id The charm's id.
+        @param channel optional channel information.
         '''
-        return self.entity(charm_id, get_files=True)
+        return self.entity(charm_id, get_files=True, channel=channel)
 
-    def charm_icon_url(self, charm_id):
+    def charm_icon_url(self, charm_id, channel=None):
         '''Generate the path to the icon for charms.
 
         @param charm_id The ID of the charm, bundle icons are not currently
         supported.
+        @param channel optional channel.
+
         @return url string for the path to the icon.'''
-        return '%s/%s/icon.svg' % (self.url, _get_path(charm_id))
+        url = '{}/{}/icon.svg'.format(self.url, _get_path(charm_id))
+        if channel is not None:
+            url = '{}?channel={}'.format(url, channel)
+        return url
 
-    def charm_icon(self, charm_id):
-        url = self.charm_icon_url(charm_id)
+    def charm_icon(self, charm_id, channel=None):
+        url = self.charm_icon_url(charm_id, channel=channel)
         response = self._get(url)
         return response.content
 
-    def bundle_visualization(self, bundle_id):
-        url = self.bundle_visualization_url(bundle_id)
+    def bundle_visualization(self, bundle_id, channel=None):
+        url = self.bundle_visualization_url(bundle_id, channel=channel)
         response = self._get(url)
         return response.content
 
-    def bundle_visualization_url(self, bundle_id):
-        return '%s/%s/diagram.svg' % (self.url, _get_path(bundle_id))
+    def bundle_visualization_url(self, bundle_id, channel=None):
+        url = '{}/{}/diagram.svg'.format(self.url, _get_path(bundle_id))
+        if channel is not None:
+            url = '{}?channel={}'.format(url, channel)
+        return url
 
-    def entity_readme_url(self, entity_id):
+    def entity_readme_url(self, entity_id, channel=None):
         '''Generate the url path for the readme of the entity.'''
-        return '%s/%s/readme' % (self.url, _get_path(entity_id))
+        url = '{}/{}/readme'.format(self.url, _get_path(entity_id))
+        if channel is not None:
+            url = '{}?channel={}'.format(url, channel)
+        return url
 
-    def entity_readme_content(self, entity_id):
-        readme_url = self.entity_readme_url(entity_id)
+    def entity_readme_content(self, entity_id, channel=None):
+        readme_url = self.entity_readme_url(entity_id, channel=channel)
         response = self._get(readme_url)
         return response.text
 
-    def archive_url(self, entity_id):
+    def archive_url(self, entity_id, channel=None):
         '''Generate a URL for the archive.
 
         @param entity_id The ID of the entity to look up as a string
                or reference.
+        @param channel optional channel information.
         '''
-        return '%s/%s/archive' % (self.url, _get_path(entity_id))
+        url = '{}/{}/archive'.format(self.url, _get_path(entity_id))
+        if channel is not None:
+            url = '{}?channel={}'.format(url, channel)
+        return url
 
-    def file_url(self, entity_id, filename):
+    def file_url(self, entity_id, filename, channel=None):
         '''Generate a URL for a file in an archive without requesting it.
 
         @param entity_id The ID of the entity to look up.
         @param filename The name of the file in the archive.
+        @param channel optional channel information.
         '''
-        return '%s/%s/archive/%s' % (self.url, _get_path(entity_id), filename)
+        url = '{}/{}/archive/{}'.format(self.url, _get_path(entity_id),
+                                        filename)
+        if channel is not None:
+            url = '{}?channel={}'.format(url, channel)
+        return url
 
-    def files(self, entity_id, manifest=None, filename=None, read_file=False):
+    def files(self, entity_id, manifest=None, filename=None,
+              read_file=False, channel=None):
         '''
         Get the files or file contents of a file for an entity.
 
@@ -198,16 +230,20 @@ class CharmStore(object):
         @param filename The name of the file in the archive to get.
         @param read_file Whether to get the url for the file or the file
         contents.
+        @param channel optional channel information.
         '''
         if manifest is None:
-            manifest_url = '%s/%s/meta/manifest' % (self.url,
-                                                    _get_path(entity_id))
+            manifest_url = '{}/{}/meta/manifest'.format(self.url,
+                                                        _get_path(entity_id))
+            if channel is not None:
+                manifest_url = '{}?channel={}'.format(manifest_url, channel)
             manifest = self._get(manifest_url)
             manifest = manifest.json()
         files = {}
         for f in manifest:
             manifest_name = f['Name']
-            file_url = self.file_url(_get_path(entity_id), manifest_name)
+            file_url = self.file_url(_get_path(entity_id), manifest_name,
+                                     channel=channel)
             files[manifest_name] = file_url
 
         if filename:
@@ -222,22 +258,28 @@ class CharmStore(object):
         else:
             return files
 
-    def config(self, charm_id):
+    def config(self, charm_id, channel=None):
         '''Get the config data for a charm.
 
         @param charm_id The charm's id.
+        @param channel optional channel information.
         '''
-        url = '%s/%s/meta/charm-config' % (self.url, _get_path(charm_id))
+        url = '{}/{}/meta/charm-config'.format(self.url, _get_path(charm_id))
+        if channel is not None:
+            url = '{}?channel={}'.format(url, channel)
         data = self._get(url)
         return data.json()
 
-    def entityId(self, partial):
+    def entityId(self, partial, channel=None):
         '''Get an entity's full id provided a partial one.
 
         Raises EntityNotFound if partial cannot be resolved.
         @param partial The partial id (e.g. mysql, precise/mysql).
+        @param channel optional channel information.
         '''
-        url = '%s/%s/meta/any' % (self.url, _get_path(partial))
+        url = '{}/{}/meta/any'.format(self.url, _get_path(partial))
+        if channel is not None:
+            url = '{}?channel={}'.format(url, channel)
         data = self._get(url)
         return data.json()['Id']
 
