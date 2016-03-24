@@ -30,7 +30,8 @@ setup(
     package_dir={'theblues': 'theblues'},
     include_package_data=True,
     install_requires=[
-        'requests==2.6.0',
+        'requests>=2.1.1',
+        'jujubundlelib>=0.4.1',
     ],
     tests_requires=[
         'httmock==1.2.3',
