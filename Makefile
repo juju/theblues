@@ -6,8 +6,11 @@ THEBLUES := lib/python*/site-packages/theblues.egg-link
 FLAKE8 := bin/flake8
 SPHINX := bin/sphinx-apidoc
 TOX := bin/tox
+VPART ?= patch
 
 help:
+	@echo "bumpversion - bump version."
+	@echo "  By default bumps patch level. 'VPART=[major|minor|patch] make bumpversion' to specify."
 	@echo "dev - install theblues in develop mode"
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
@@ -30,10 +33,10 @@ $(PYTEST): $(PY)
 $(TOX): $(PY)
 	$(MAKE) testdeps
 
-$(FLAKE8): $(PY) 
+$(FLAKE8): $(PY)
 	$(MAKE) testdeps
 
-$(SPHINX): $(PYTEST) 
+$(SPHINX): $(PYTEST)
 	$(MAKE) devdeps
 
 #########
@@ -92,7 +95,7 @@ coverage: deps venv dev $(PYTEST)
 
 .PHONY: test-all
 test-all: $(TOX)
-	$(TOX)	
+	$(TOX)
 
 .PHONY: check
 check: clean test-all
@@ -116,9 +119,15 @@ docs: $(SPHINX)
 ######
 # DIST
 ######
+.PHONY: bumpversion
+bumpversion: devdeps
+	bin/bumpversion $(VPART)
+
+.PHONY: dist
 dist:
 	python setup.py sdist
 
+.PHONY: upload
 upload: dist
 	python setup.py sdist upload
 

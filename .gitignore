@@ -60,3 +60,4 @@ target/
 # Editor artifacts
 .*.sw*
 *~
+pip-selfcheck.json
