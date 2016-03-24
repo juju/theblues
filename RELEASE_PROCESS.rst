@@ -113,14 +113,14 @@ Have a file ~/.pypirc with the following content
             pypi
             pypitest
 
-        [pypi]
-        repository: https://pypi.python.org/pypi
-        username: {{your_username}}
-        password: {{your_password}}
+    [pypi]
+    repository=https://pypi.python.org/pypi
+    username={{your_username}}
+    password={{your_password}}
 
-        [pypitest]
-        repository: https://testpypi.python.org/pypi
-        username: {{your_username}}
+    [pypitest]
+    repository=https://testpypi.python.org/pypi
+    username={{your_username}}
 
 
 
