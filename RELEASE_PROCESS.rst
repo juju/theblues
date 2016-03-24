@@ -10,27 +10,12 @@ current working repository as the following commands expect a fresh clone.
      cd theblues
 
 
-Find the next release number. You can check the last release by running `git
-tag` and finding the largest version number. Note that the values are sorted
-as strings, so don't just look at the last value.
-
-::
-
-    git tag | sort -V
-
-Select the next number in sequence keeping in mind the minor/major versions
-use.
-
-::
-
-    export THEBLUESRELEASE=$the_new_version
-
 
 Generate changelog
 ------------------
 We structure merge commit messages to be a short summary of the change. As such
 you can get a quick log of all the major changes since the last release with
-`git log`.
+`git log`.  You can find the last release by looking in the `.bumpversion` file.
 
 ::
 
@@ -41,32 +26,8 @@ Use the output from that to update the changelog with the major changes of the
 release.
 
 
-Update the application version to the correct version.
-
-Update the application version in the the setup.py
-
-::
-
-    vim setup.py
-
-
-change
-
-setup(
-    name='theblues',
-    version='$the_new_version'
-
-
-and then commit the changes.
-
-::
-
-    git commit -a -m "Prepare for release: $THEBLUESRELEASE"
-
-
-Create the release
-------------------
-
+Update the master branch and test
+---------------------------------
 
 Checkout the master branch, and merge develop into it. Verify that it passes
 tests by running make check.
@@ -77,13 +38,37 @@ tests by running make check.
     git merge develop
     make check
 
+Increment the version
+---------------------
 
-Tag the commit with the release number and push your changes to master on github.
-
+To just increment the patch level (e.g. 0.2.0 ->
+0.2.1) just run
 
 ::
 
-    git tag $THEBLUESRELEASE
+    make bumpversion
+
+To increment the minor (e.g. 0.2.2 -> 0.3.0) run
+
+::
+
+    VPART=minor make bumpversion
+
+To increment the major (e.g. 0.2.2 -> 1.0.0) run
+
+::
+
+    VPART=major make bumpversion
+
+
+Create the release
+------------------
+
+At this point the version is incremented, committed to git, and tagged.  Push
+the changes upstream.
+
+::
+
     git push origin master --tags
 
 
@@ -121,9 +106,6 @@ Have a file ~/.pypirc with the following content
     [pypitest]
     repository=https://testpypi.python.org/pypi
     username={{your_username}}
-
-
-
 
 
 Then you can publish the release to pipy,
