@@ -1,2 +1,2 @@
-jujubundlelib==0.4.1
-requests==2.6.0
+jujubundlelib>=0.4.1
+requests>=2.2.1
