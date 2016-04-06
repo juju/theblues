@@ -4,7 +4,7 @@ from mock import (
     )
 from unittest import TestCase
 
-from private_blues.jem import JEM
+from theblues.jem import JEM
 
 
 class TestJEM(TestCase):
@@ -61,7 +61,7 @@ class TestJEM(TestCase):
         resp = self.jem.fetch_macaroon()
         self.assertIsNone(resp)
 
-    @patch('private_blues.jem.make_request')
+    @patch('theblues.jem.make_request')
     def test_get_user_models(self, mocked):
         mocked.return_value = '42'
         resp = self.jem.get_users_models('macaroons!')
@@ -69,7 +69,7 @@ class TestJEM(TestCase):
         mocked.called_once_with(
             'http://example.com/env', macaroons='macaroons!')
 
-    @patch('private_blues.jem.make_request')
+    @patch('theblues.jem.make_request')
     def test_get_model(self, mocked):
         mocked.return_value = '42'
         resp = self.jem.get_model('macaroons!', 'dalek', 'exterminate')

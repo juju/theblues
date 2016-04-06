@@ -1,4 +1,8 @@
 import logging
+try:
+    from urllib import urlencode
+except:
+    from urllib.parse import urlencode
 
 import requests
 from requests.exceptions import (
@@ -12,10 +16,6 @@ from .errors import (
     ServerError,
     )
 
-try:
-    from urllib import urlencode
-except:
-    from urllib.parse import urlencode
 
 
 class CharmStore(object):

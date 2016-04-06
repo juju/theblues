@@ -1,11 +1,14 @@
 import collections
 import json
-import urllib
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 
 import requests
 from requests.exceptions import HTTPError
 
-from private_blues.errors import (
+from errors import (
     log,
     ServerError,
     timeout_error,

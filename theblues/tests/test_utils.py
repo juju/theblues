@@ -3,16 +3,16 @@ from unittest import TestCase
 from httmock import HTTMock
 import mock
 
-from private_blues.errors import ServerError
-from private_blues.utils import make_request
-from private_blues.tests import helpers
+from theblues.errors import ServerError
+from theblues.utils import make_request
+from theblues.tests import helpers
 
 URL = 'http://example.com/'
 
 
 def patch_log_error():
     """Mock the error method of the error logger."""
-    return mock.patch('private_blues.utils.log.error')
+    return mock.patch('theblues.utils.log.error')
 
 
 class TestUtils(TestCase, helpers.TimeoutTestsMixin):
@@ -107,7 +107,7 @@ class TestUtils(TestCase, helpers.TimeoutTestsMixin):
         mock_log_error.assert_called_once_with(expected_error)
 
     def test_make_request_unexpected_error(self):
-        with mock.patch('private_blues.utils.requests.get') as mock_get:
+        with mock.patch('theblues.utils.requests.get') as mock_get:
             mock_get.side_effect = ValueError('bad wolf')
             with patch_log_error() as mock_log_error:
                 with self.assertRaises(ServerError) as ctx:

@@ -4,7 +4,7 @@ from httmock import HTTMock
 import mock
 import requests
 
-from private_blues.errors import ServerError
+from theblues.errors import ServerError
 
 
 def timeout_response(url, request):
@@ -18,7 +18,7 @@ class TimeoutTestsMixin(object):
     def assert_timeout(self, url, timeout):
         """Ensure the request in the context block times out."""
         with HTTMock(timeout_response):
-            with mock.patch('private_blues.errors.log.warning') as mock_warn:
+            with mock.patch('theblues.errors.log.warning') as mock_warn:
                 with self.assertRaises(ServerError) as ctx:
                     yield ctx
         expected_message = 'Request timed out: {} timeout: {}s'.format(

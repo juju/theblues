@@ -9,12 +9,12 @@ from httmock import (
 import macaroons
 from mock import patch
 
-from private_blues.errors import (
+from theblues.errors import (
     InvalidMacaroon,
     ServerError,
 )
-from private_blues.identity_manager import IdentityManager
-from private_blues.tests import helpers
+from theblues.identity_manager import IdentityManager
+from theblues.tests import helpers
 
 
 _called = None
@@ -72,9 +72,9 @@ def extra(url, request):
 
 
 def patch_make_request(return_value=None):
-    """Patch the "private_blues.utils.make_request" helper function."""
+    """Patch the "theblues.utils.make_request" helper function."""
     return patch(
-        'private_blues.identity_manager.make_request',
+        'theblues.identity_manager.make_request',
         return_value=return_value)
 
 
@@ -155,7 +155,7 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
         with self.assert_timeout(expected_url, 3.05):
             self.idm.discharge('who', macaroon)
 
-    @patch('private_blues.identity_manager.make_request')
+    @patch('theblues.identity_manager.make_request')
     def test_discharge_username_quoted(self, make_request_mock):
         # When discharging the macaroon for the identity, the user name is
         # properly quoted.
@@ -184,19 +184,19 @@ class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
         self.assertEqual(self.idm.url, 'http://example.com:8082/v1/')
         self.assertEqual(self.idm.auth, ('user', 'password'))
 
-    @patch('private_blues.identity_manager.make_request')
+    @patch('theblues.identity_manager.make_request')
     def test_debug(self, mock):
         self.idm.debug()
         mock.assert_called_once_with(
             'http://example.com:8082/v1/debug/status', timeout=3.05)
 
-    @patch('private_blues.identity_manager.make_request')
+    @patch('theblues.identity_manager.make_request')
     def test_debug_fail(self, mock):
         mock.side_effect = ServerError('abc')
         val = self.idm.debug()
         self.assertEquals(val, {'error': 'abc'})
 
-    @patch('private_blues.identity_manager.make_request')
+    @patch('theblues.identity_manager.make_request')
     def test_get_user(self, make_request_mock):
         self.idm.get_user('jeffspinach')
         make_request_mock.assert_called_once_with(

@@ -3,11 +3,11 @@ import json
 import logging
 import urllib
 
-from private_blues.errors import (
+from errors import (
     InvalidMacaroon,
     ServerError,
 )
-from private_blues.utils import (
+from utils import (
     ensure_trailing_slash,
     make_request,
 )
