@@ -17,7 +17,6 @@ from .errors import (
     )
 
 
-
 class CharmStore(object):
     """A connection to the charmstore."""
 
@@ -38,9 +37,6 @@ class CharmStore(object):
                                     timeout=self.timeout)
             response.raise_for_status()
             return response
-        # XXX: To be reviewed when splitting the library.
-        # Is it te right place to log or should we let the users of the blues
-        # to handle logging ?
         except HTTPError as exc:
             if exc.response.status_code in (404, 407):
                 raise EntityNotFound(url)
