@@ -98,7 +98,8 @@ test-all: $(TOX)
 	$(TOX)
 
 .PHONY: check
-check: clean test-all
+#check: clean test-all
+check: clean lint test
 
 lint: $(FLAKE8)
 	$(FLAKE8) theblues
