@@ -21,7 +21,7 @@ class TestUtils(TestCase, helpers.TimeoutTestsMixin):
         self.assertEqual('http://example.com/?uuid=foo', url.geturl())
         return {
             'status_code': 200,
-            'content': '{"foo":"bar","baz":"bax"}',
+            'content': b'{"foo":"bar","baz":"bax"}',
         }
 
     def empty_response(self, url, request):
@@ -33,19 +33,19 @@ class TestUtils(TestCase, helpers.TimeoutTestsMixin):
     def failing_response(self, url, request):
         return {
             'status_code': 404,
-            'content': 'not-found'
+            'content': b'not-found'
         }
 
     def failing_response_server(self, url, request):
         return {
             'status_code': 500,
-            'content': 'server-failed'
+            'content': b'server-failed'
         }
 
     def invalid_response(self, url, request):
         return {
             'status_code': 200,
-            'content': '{'
+            'content': b'{'
         }
 
     def test_make_request(self):
@@ -62,7 +62,7 @@ class TestUtils(TestCase, helpers.TimeoutTestsMixin):
                 'application/json', request.headers['Content-Type'])
             return {
                 'status_code': 200,
-                'content': '{"foo":"bar","baz":"bax"}',
+                'content': b'{"foo":"bar","baz":"bax"}',
             }
         # Test with a JSON decoded object.
         with HTTMock(handler):
@@ -122,7 +122,7 @@ class TestUtils(TestCase, helpers.TimeoutTestsMixin):
         with HTTMock(self.invalid_response):
             with self.assertRaises(ServerError) as ctx:
                 make_request(URL, query={'uuid': 'foo'})
-        self.assertIn('Error decoding JSON response', ctx.exception.message)
+        self.assertIn('Error decoding JSON response', ctx.exception.args[0])
 
     def test_make_request_timeout(self):
         with self.assert_timeout('http://example.com/?uuid=foo', 42):
@@ -131,4 +131,4 @@ class TestUtils(TestCase, helpers.TimeoutTestsMixin):
     def test_make_request_invalid_method(self):
         with self.assertRaises(ValueError) as ctx:
             make_request('http://1.2.3.4', method='bad')
-        self.assertEqual('invalid method bad', ctx.exception.message)
+        self.assertEqual('invalid method bad', ctx.exception.args[0])

@@ -138,13 +138,13 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
             'http://example.com/', "caveat_key", "identifier"))
         with HTTMock(discharge_macaroon_200):
             results = self.idm.discharge('Brad', macaroon)
-        self.assertEqual(base64.urlsafe_b64encode('"something"'), results)
+        self.assertEqual(base64.urlsafe_b64encode(b'"something"'), results)
 
     def test_discharge_error_invalid_macaroon(self):
         macaroon = self._makeMockMacaroon()
         with HTTMock(discharge_macaroon_200):
-            self.assertRaises(
-                InvalidMacaroon, self.idm.discharge, 'Brad', macaroon)
+            with self.assertRaises(InvalidMacaroon):
+                self.idm.discharge('Brad', macaroon)
 
     def test_discharge_error_wrong_status(self):
         macaroon = self._makeMockMacaroon((
@@ -171,7 +171,8 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
         macaroon = self._makeMockMacaroon((
             'http://example.com/', "caveat_key", "identifier"))
         base64_macaroon = self.idm.discharge('my.user+name', macaroon)
-        expected_macaroon = base64.urlsafe_b64encode(json.dumps('macaroon'))
+        expected_macaroon = base64.urlsafe_b64encode(
+            json.dumps('macaroon').encode('utf-8'))
         self.assertEqual(expected_macaroon, base64_macaroon)
         make_request_mock.assert_called_once_with(
             'http://example.com/v1/discharger/discharge'
