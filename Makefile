@@ -58,13 +58,6 @@ dev: venv $(THEBLUES)
 ######
 # DEPS
 ######
-
-.phony: sysdeps
-sysdeps:
-	sudo apt-get install -y software-properties-common
-	sudo add-apt-repository ppa:yellow/ppa -y
-	sudo apt-get install libmacaroons0 python-macaroons libsodium13
-
 .PHONY: deps
 deps: venv lib/python2.7/site-packages/macaroons.so
 	$(PIP) install -r requirements.txt
@@ -98,8 +91,7 @@ test-all: $(TOX)
 	$(TOX)
 
 .PHONY: check
-#check: clean test-all
-check: clean lint test
+check: clean test-all
 
 lint: $(FLAKE8)
 	$(FLAKE8) theblues
