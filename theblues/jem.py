@@ -2,8 +2,8 @@ import json
 
 import requests
 
-from errors import log
-from utils import (
+from theblues.errors import log
+from theblues.utils import (
     ensure_trailing_slash,
     make_request,
 )

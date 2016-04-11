@@ -1,13 +1,16 @@
 import base64
 import json
 import logging
-import urllib
+try:
+    from urllib import quote
+except ImportError:
+    from urllib.parse import quote
 
-from errors import (
+from theblues.errors import (
     InvalidMacaroon,
     ServerError,
 )
-from utils import (
+from theblues.utils import (
     ensure_trailing_slash,
     make_request,
 )
@@ -37,7 +40,7 @@ class IdentityManager(object):
         try:
             return make_request(url, timeout=self.timeout)
         except ServerError as err:
-            return {"error": bytes(err)}
+            return {"error": str(err)}
 
     def login(self, username, json_document):
         """Send user identity information to the identity manager.
@@ -70,13 +73,14 @@ class IdentityManager(object):
                 'Invalid number of third party caveats (1 != {})'
                 ''.format(len(caveats)))
         url = '{}discharger/discharge?discharge-for-user={}&id={}'.format(
-            self.url, urllib.quote(username), caveats[0][1])
+            self.url, quote(username), caveats[0][1])
         logging.debug('Sending identity info to {}'.format(url))
         logging.debug('data is {}'.format(caveats[0][1]))
         response = make_request(
             url, method='POST', auth=self.auth, timeout=self.timeout)
         macaroon = response['Macaroon']
-        return base64.urlsafe_b64encode(json.dumps(macaroon))
+        json_macaroon = json.dumps(macaroon)
+        return base64.urlsafe_b64encode(json_macaroon.encode('utf-8'))
 
     def _get_extra_info_url(self, username):
         """Return the base URL for extra-info requests."""

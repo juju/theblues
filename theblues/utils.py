@@ -8,7 +8,7 @@ except ImportError:
 import requests
 from requests.exceptions import HTTPError
 
-from errors import (
+from theblues.errors import (
     log,
     ServerError,
     timeout_error,
