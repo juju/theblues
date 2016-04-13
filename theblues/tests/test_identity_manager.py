@@ -6,8 +6,10 @@ from httmock import (
     HTTMock,
     urlmatch,
 )
-import macaroons
-from mock import patch
+from mock import (
+    Mock,
+    patch,
+    )
 
 from theblues.errors import (
     InvalidMacaroon,
@@ -122,33 +124,39 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
         with self.assert_timeout('http://example.com/v1/u/who', 3.05):
             self.idm.login('who', {})
 
+    def _makeMockMacaroon(self, third_party_caveat=None):
+        macaroon = Mock()
+        if third_party_caveat:
+            caveat = [third_party_caveat[1:]]
+        else:
+            caveat = []
+        macaroon.third_party_caveats = Mock(return_value=caveat)
+        return macaroon
+
     def test_discharge_successful(self):
-        macaroon = macaroons.create("location", "secret", "public")
-        macaroon = macaroon.add_third_party_caveat(
-            'http://example.com/', "caveat_key", "identifier")
+        macaroon = self._makeMockMacaroon((
+            'http://example.com/', "caveat_key", "identifier"))
         with HTTMock(discharge_macaroon_200):
             results = self.idm.discharge('Brad', macaroon)
-        self.assertEqual(base64.urlsafe_b64encode('"something"'), results)
+        self.assertEqual(base64.urlsafe_b64encode(b'"something"'), results)
 
     def test_discharge_error_invalid_macaroon(self):
-        macaroon = macaroons.create("location", "secret", "public")
+        macaroon = self._makeMockMacaroon()
         with HTTMock(discharge_macaroon_200):
-            self.assertRaises(
-                InvalidMacaroon, self.idm.discharge, 'Brad', macaroon)
+            with self.assertRaises(InvalidMacaroon):
+                self.idm.discharge('Brad', macaroon)
 
     def test_discharge_error_wrong_status(self):
-        macaroon = macaroons.create("location", "secret", "public")
-        macaroon = macaroon.add_third_party_caveat(
-            'http://example.com/', "caveat_key", "identifier")
+        macaroon = self._makeMockMacaroon((
+            'http://example.com/', "caveat_key", "identifier"))
         with HTTMock(discharge_macaroon_404):
             with self.assertRaises(ServerError) as ctx:
                 self.idm.discharge('Brad', macaroon)
         self.assertEqual(404, ctx.exception.args[0])
 
     def test_discharge_error_timeout(self):
-        macaroon = macaroons.create("location", "secret", "public")
-        macaroon = macaroon.add_third_party_caveat(
-            'http://example.com/', "caveat_key", "identifier")
+        macaroon = self._makeMockMacaroon((
+            'http://example.com/', "caveat_key", "identifier"))
         expected_url = (
             'http://example.com/v1/discharger/discharge'
             '?discharge-for-user=who&id=identifier')
@@ -160,11 +168,11 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
         # When discharging the macaroon for the identity, the user name is
         # properly quoted.
         make_request_mock.return_value = {'Macaroon': 'macaroon'}
-        macaroon = macaroons.create("location", "secret", "public")
-        macaroon = macaroon.add_third_party_caveat(
-            'http://example.com/', "caveat_key", "identifier")
+        macaroon = self._makeMockMacaroon((
+            'http://example.com/', "caveat_key", "identifier"))
         base64_macaroon = self.idm.discharge('my.user+name', macaroon)
-        expected_macaroon = base64.urlsafe_b64encode(json.dumps('macaroon'))
+        expected_macaroon = base64.urlsafe_b64encode(
+            json.dumps('macaroon').encode('utf-8'))
         self.assertEqual(expected_macaroon, base64_macaroon)
         make_request_mock.assert_called_once_with(
             'http://example.com/v1/discharger/discharge'
