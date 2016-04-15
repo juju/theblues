@@ -21,8 +21,8 @@ setup(
     version='0.2.0',
     description='Python library for using the juju charm store API.',
     long_description=readme + '\n\n' + history,
-    author='JC Sackett',
-    author_email='jcsackett@canonical.com',
+    author='Juju GUI Developers',
+    author_email='juju-gui@lists.ubuntu.com',
     url='https://github.com/juju/theblues',
     packages=[
         'theblues',
@@ -39,7 +39,7 @@ setup(
     zip_safe=False,
     keywords='theblues',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Lesser General Public License v3 ' +
         '(LGPLv3)',

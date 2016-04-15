@@ -21,6 +21,16 @@ class CharmStore(object):
     """A connection to the charmstore."""
 
     def __init__(self, url, macaroons=None, timeout=None, verify=True):
+        """Initializer.
+
+        @param url The url to the charmstore API.
+        @param macaroons The optional discharged macaroon allowing access to
+            authenticated queries against the charmstore.
+        @param timeout How long to wait in seconds before timing out a request;
+            a value of None means no timeout.
+        @param verify Whether to verify the certificate for the charmstore API
+            host.
+        """
         super(CharmStore, self).__init__()
         self.url = url
         self.verify = verify
@@ -28,6 +38,13 @@ class CharmStore(object):
         self.macaroons = macaroons
 
     def _get(self, url):
+        """Make a get request against the charmstore.
+
+        This method is used by other API methods to standardize querying.
+
+        @param url The full url to query
+            (e.g. https://api.jujucharms.com/charmstore/v4/macaroon)
+        """
         if self.macaroons is None or len(self.macaroons) == 0:
             cookies = {}
         else:
@@ -72,7 +89,7 @@ class CharmStore(object):
         @param entity_id The ID either a reference or a string of the entity
                to get.
         @param includes Which metadata fields to include in the response.
-        @param channel optional channel name.
+        @param channel Optional channel name, e.g. `development`.
         '''
         queries = []
         if includes is not None:
@@ -91,7 +108,8 @@ class CharmStore(object):
         '''Get the default data for any entity (e.g. bundle or charm).
 
         @param entity_id The entity's id either as a reference or a string
-        @param channel optional channel name.
+        @param get_files Whether to fetch the files for the charm or not.
+        @param channel Optional channel name.
         '''
         includes = [
             'bundle-machine-count',
@@ -128,7 +146,7 @@ class CharmStore(object):
         '''Get the default data for a bundle.
 
         @param bundle_id The bundle's id.
-        @param channel optional channel name.
+        @param channel Optional channel name.
         '''
         return self.entity(bundle_id, get_files=True, channel=channel)
 
@@ -136,51 +154,75 @@ class CharmStore(object):
         '''Get the default data for a charm.
 
         @param charm_id The charm's id.
-        @param channel optional channel name.
+        @param channel Optional channel name.
         '''
         return self.entity(charm_id, get_files=True, channel=channel)
 
     def charm_icon_url(self, charm_id, channel=None):
         '''Generate the path to the icon for charms.
 
-        @param charm_id The ID of the charm, bundle icons are not currently
-        supported.
-        @param channel optional channel name.
-
-        @return url string for the path to the icon.'''
+        @param charm_id The ID of the charm.
+        @param channel Optional channel name.
+        @return The url to the icon.
+        '''
         url = '{}/{}/icon.svg'.format(self.url, _get_path(charm_id))
         return _add_channel(url, channel)
 
     def charm_icon(self, charm_id, channel=None):
+        '''Get the charm icon.
+
+        @param charm_id The ID of the charm.
+        @param channel Optional channel name.
+        '''
         url = self.charm_icon_url(charm_id, channel=channel)
         response = self._get(url)
         return response.content
 
     def bundle_visualization(self, bundle_id, channel=None):
+        '''Get the bundle visualization.
+
+        @param bundle_id The ID of the bundle.
+        @param channel Optional channel name.
+        '''
         url = self.bundle_visualization_url(bundle_id, channel=channel)
         response = self._get(url)
         return response.content
 
     def bundle_visualization_url(self, bundle_id, channel=None):
+        '''Generate the path to the visualization for bundles.
+
+        @param charm_id The ID of the bundle.
+        @param channel Optional channel name.
+        @return The url to the visualization.
+        '''
         url = '{}/{}/diagram.svg'.format(self.url, _get_path(bundle_id))
         return _add_channel(url, channel)
 
     def entity_readme_url(self, entity_id, channel=None):
-        '''Generate the url path for the readme of the entity.'''
+        '''Generate the url path for the readme of an entity.
+
+        @entity_id The id of the entity (i.e. charm, bundle).
+        @param channel Optional channel name.
+        '''
         url = '{}/{}/readme'.format(self.url, _get_path(entity_id))
         return _add_channel(url, channel)
 
     def entity_readme_content(self, entity_id, channel=None):
+        '''Get the readme for an entity.
+
+        @entity_id The id of the entity (i.e. charm, bundle).
+        @param channel Optional channel name.
+        '''
         readme_url = self.entity_readme_url(entity_id, channel=channel)
         response = self._get(readme_url)
         return response.text
 
     def archive_url(self, entity_id, channel=None):
-        '''Generate a URL for the archive.
+        '''Generate a URL for the archive of an entity..
 
         @param entity_id The ID of the entity to look up as a string
                or reference.
-        @param channel optional channel name.
+        @param channel Optional channel name.
         '''
         url = '{}/{}/archive'.format(self.url, _get_path(entity_id))
         return _add_channel(url, channel)
@@ -190,7 +232,7 @@ class CharmStore(object):
 
         @param entity_id The ID of the entity to look up.
         @param filename The name of the file in the archive.
-        @param channel optional channel name.
+        @param channel Optional channel name.
         '''
         url = '{}/{}/archive/{}'.format(self.url, _get_path(entity_id),
                                         filename)
@@ -212,12 +254,12 @@ class CharmStore(object):
 
         @param entity_id The id of the entity to get files for
         @param manifest The manifest of files for the entity. Providing this
-        reduces queries; if not provided, the manifest is looked up in the
-        charmstore.
+            reduces queries; if not provided, the manifest is looked up in the
+            charmstore.
         @param filename The name of the file in the archive to get.
         @param read_file Whether to get the url for the file or the file
-        contents.
-        @param channel optional channel name.
+            contents.
+        @param channel Optional channel name.
         '''
         if manifest is None:
             manifest_url = '{}/{}/meta/manifest'.format(self.url,
@@ -248,7 +290,7 @@ class CharmStore(object):
         '''Get the config data for a charm.
 
         @param charm_id The charm's id.
-        @param channel optional channel name.
+        @param channel Optional channel name.
         '''
         url = '{}/{}/meta/charm-config'.format(self.url, _get_path(charm_id))
         data = self._get(_add_channel(url, channel))
@@ -259,7 +301,7 @@ class CharmStore(object):
 
         Raises EntityNotFound if partial cannot be resolved.
         @param partial The partial id (e.g. mysql, precise/mysql).
-        @param channel optional channel name.
+        @param channel Optional channel name.
         '''
         url = '{}/{}/meta/any'.format(self.url, _get_path(partial))
         data = self._get(_add_channel(url, channel))
@@ -279,11 +321,11 @@ class CharmStore(object):
         @param promulgated_only Whether to filter to only promulgated charms.
         @param tags The tags to filter; can be a list of tags or a single tag.
         @param sort Sorting the result based on the sort string provided
-        which can be name, author, series and - in front for descending.
+            which can be name, author, series and - in front for descending.
         @param owner Optional owner. If provided, search results will only
-        include entities that owner can view.
+            include entities that owner can view.
         @param series The series to filter; can be a list of series or a
-        single series.
+            single series.
         '''
         queries = self._common_query_parameters(doc_type, includes, owner,
                                                 promulgated_only, series, sort)
@@ -313,11 +355,11 @@ class CharmStore(object):
         @param doc_type Filter to this type: bundle or charm.
         @param promulgated_only Whether to filter to only promulgated charms.
         @param sort Sorting the result based on the sort string provided
-        which can be name, author, series and - in front for descending.
+            which can be name, author, series and - in front for descending.
         @param owner Optional owner. If provided, search results will only
-        include entities that owner can view.
+            include entities that owner can view.
         @param series The series to filter; can be a list of series or a
-        single series.
+            single series.
         '''
         queries = self._common_query_parameters(doc_type, includes, owner,
                                                 promulgated_only, series, sort)
@@ -337,11 +379,11 @@ class CharmStore(object):
         @param doc_type Filter to this type: bundle or charm.
         @param promulgated_only Whether to filter to only promulgated charms.
         @param sort Sorting the result based on the sort string provided
-        which can be name, author, series and - in front for descending.
+            which can be name, author, series and - in front for descending.
         @param owner Optional owner. If provided, search results will only
-        include entities that owner can view.
+            include entities that owner can view.
         @param series The series to filter; can be a list of series or a
-        single series.
+            single series.
         '''
         queries = []
         if includes is not None:
@@ -360,7 +402,16 @@ class CharmStore(object):
             queries.append(('sort', sort))
         return queries
 
+    # XXX j.c.sackett 2016-04-15 this should be updated to just accept a list
+    # of id strings, and client code should be updated to pass that.
     def fetch_related(self, ids):
+        """Fetch related entity information.
+
+        Fetches metadata, stats and extra-info for the supplied entities.
+
+        @param ids The entity ids to fetch related information for. A list of
+            entity id dicts from the charmstore.
+        """
         if not ids:
             return []
         meta = '&id='.join(id['Id'] for id in ids)
@@ -373,10 +424,10 @@ class CharmStore(object):
         return data.json().values()
 
     def fetch_interfaces(self, interface, way):
-        """Get the list of charms that provides or requires this id
+        """Get the list of charms that provides or requires this interface.
 
-        @param id: charm string
-        @param way: provides or requires
+        @param interface The interface for the charm relation.
+        @param way The type of relation, either "provides" or "requires".
         @return List of charms
         """
         if not interface:
@@ -423,8 +474,8 @@ def _get_path(entity_id):
 def _add_channel(url, channel=None):
     '''Add channel query parameters when present.
 
-    @param url the url to add the channel query when present.
-    @param channel the channel name.
+    @param url The url to add the channel query when present.
+    @param channel The channel name.
     @return the url with channel query parameter when present.
     '''
     if channel is not None:

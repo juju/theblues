@@ -20,6 +20,14 @@ class IdentityManager(object):
     """Identity Manager API."""
 
     def __init__(self, url, idm_user, idm_password, timeout=3.05):
+        """Initializer.
+
+        @param url The url to the identity manager (IdM) API.
+        @param idm_user The user name for the IdM.
+        @param idm_password The password for the IdM.
+        @param timeout How long to wait before timing out a request in seconds;
+            a value of None means no timeout.
+        """
         self.url = ensure_trailing_slash(url)
         self.auth = (idm_user, idm_password)
         self.timeout = timeout
@@ -27,9 +35,9 @@ class IdentityManager(object):
     def get_user(self, username):
         """Fetch user data.
 
-        @param username the user's name.
-
         Raise a ServerError if an error occurs in the request process.
+
+        @param username the user's name.
         """
         url = '{}u/{}'.format(self.url, username)
         return make_request(url, auth=self.auth)
@@ -45,10 +53,10 @@ class IdentityManager(object):
     def login(self, username, json_document):
         """Send user identity information to the identity manager.
 
-        @param username -- the logged in user.
-        @param json_document -- JSON payload for login.
-
         Raise a ServerError if an error occurs in the request process.
+
+        @param username The logged in user.
+        @param json_document The JSON payload for login.
         """
         url = '{}u/{}'.format(self.url, username)
         make_request(
@@ -61,11 +69,11 @@ class IdentityManager(object):
     def discharge(self, username, macaroon):
         """Discharge the macarooon for the identity.
 
-        @param username -- the logged in user.
-        @param macaroon -- the macaroon returned from CharmStore.
-
-        Return the resulting base64 encoded macaroon.
         Raise a ServerError if an error occurs in the request process.
+
+        @param username The logged in user.
+        @param macaroon The macaroon returned from the charm store.
+        @return The resulting base64 encoded macaroon.
         """
         caveats = macaroon.third_party_caveats()
         if len(caveats) != 1:
@@ -83,17 +91,20 @@ class IdentityManager(object):
         return base64.urlsafe_b64encode(json_macaroon.encode('utf-8'))
 
     def _get_extra_info_url(self, username):
-        """Return the base URL for extra-info requests."""
+        """Return the base URL for extra-info requests.
+
+        @username The user who's information is being accessed.
+        """
         return '{}u/{}/extra-info'.format(self.url, username)
 
     def set_extra_info(self, username, extra_info):
         """Set extra info for the given user.
 
-        @param username The username to update.
+        Raise a ServerError if an error occurs in the request process.
+
+        @param username The username for the user to update.
         @param info The extra info as a JSON encoded string, or as a Python
             dictionary like object.
-
-        Raise a ServerError if an error occurs in the request process.
         """
         url = self._get_extra_info_url(username)
         make_request(
@@ -103,9 +114,9 @@ class IdentityManager(object):
     def get_extra_info(self, username):
         """Get extra info for the given user.
 
-        @param username The username to get.
-
         Raise a ServerError if an error occurs in the request process.
+
+        @param username The username for the user who's info is being accessed.
         """
         url = self._get_extra_info_url(username)
         return make_request(url, auth=self.auth, timeout=self.timeout)
