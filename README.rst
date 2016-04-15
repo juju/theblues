@@ -10,14 +10,20 @@ The easiest way to install theblues is via pip::
 
     $ pip install theblues
 
-Note that theblues requires python-macaroons (which has its own dependencies),
-which must be installed from a ppa::
+Parts of theblues require the use of macaroons (e.g. parsing the return of
+`Charmstore.fetch_macaroon` or interacting with `IdentityManager.discharge`).
+
+To use authenticated aspects of theblues, e.g. jem, you'll need to be able to
+manage macaroons. theblues was developed around libmacaroons. On ubuntu, you
+can get libmacaroons from a ppa::
 
 
 	$ sudo add-apt-repository ppa:yellow/ppa -y
 	$ apt-get install libmacaroons0 python-macaroons libsodium13
 
-Without these, theblues cannot communicate with the charmstore.
+Without these, theblues cannot make any authenticated requests to the
+charm store or other services, but is usable to communicate with the charm
+store for things like looking up charm information.
 
 Usage
 -----

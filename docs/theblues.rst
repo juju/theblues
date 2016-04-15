@@ -27,6 +27,30 @@ theblues.errors module
     :undoc-members:
     :show-inheritance:
 
+theblues.identity_manager module
+--------------------------------
+
+.. automodule:: theblues.identity_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+theblues.jem module
+-------------------
+
+.. automodule:: theblues.jem
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+theblues.utils module
+---------------------
+
+.. automodule:: theblues.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
