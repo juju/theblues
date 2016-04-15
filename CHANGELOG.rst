@@ -3,6 +3,11 @@
 History
 -------
 
+0.2.1 (2016-04-15)
+++++++++++++++++++
+
+* Added code for identity manager and juju environment manager APIs
+* Updated docs
 
 0.2.0 (2016-03-24)
 ++++++++++++++++++
