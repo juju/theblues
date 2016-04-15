@@ -12,12 +12,16 @@ from theblues.utils import (
 class JEM(object):
 
     def __init__(self, url):
+        """Initializer.
+
+        @param url The url to the JEM API.
+        """
         self.url = ensure_trailing_slash(url)
 
     def fetch_macaroon(self):
         """ Fetches the macaroon from the JEM service.
 
-        Return the base64 encoded macaroon.
+        @return The base64 encoded macaroon.
         """
         try:
             # We don't use make_request b/c we don't want the request to be
@@ -47,11 +51,10 @@ class JEM(object):
         return json.dumps(raw_macaroon)
 
     def get_users_models(self, macaroons):
-        """ Get the user's models from the JEM service.
+        """ Get the logged in user's models from the JEM service.
 
         @param macaroons The discharged JEM macaroons.
-
-        Return the json decoded list of environments.
+        @return The json decoded list of environments.
         """
         return make_request("{}env".format(self.url), macaroons=macaroons)
 
@@ -59,10 +62,9 @@ class JEM(object):
         """ Get a specified model.
 
         @param macaroons The discharged JEM macaroons.
-        @param user The username.
+        @param user The username of the model's owner.
         @param name The name of the model.
-
-        Return the json decoded model.
+        @return The json decoded model.
         """
         return make_request('{}env/{}/{}'.format(self.url, user, name),
                             macaroons=macaroons)
