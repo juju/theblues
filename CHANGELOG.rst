@@ -3,6 +3,11 @@
 History
 -------
 
+0.2.2 (2016-04-19)
+++++++++++++++++++
+
+Add resources in meta search and resource_url method.
+
 0.2.1 (2016-04-15)
 ++++++++++++++++++
 
