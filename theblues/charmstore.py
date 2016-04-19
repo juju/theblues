@@ -123,6 +123,7 @@ class CharmStore(object):
             'revision-info',
             'published',
             'stats',
+            'resources',
             'supported-series'
         ]
         if get_files:
@@ -285,6 +286,19 @@ class CharmStore(object):
                 return file_url
         else:
             return files
+
+    def resource_url(self, entity_id, name, revision):
+        '''
+        Return the resource url for a given resource on an entity.
+
+        @param entity_id The id of the entity to get resource for.
+        @param name The name of the resource.
+        @param revision The revision of the resource.
+        '''
+        return '{}/{}/resource/{}/{}'.format(self.url,
+                                             _get_path(entity_id),
+                                             name,
+                                             revision)
 
     def config(self, charm_id, channel=None):
         '''Get the config data for a charm.

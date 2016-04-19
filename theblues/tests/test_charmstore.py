@@ -751,3 +751,9 @@ class TestCharmStore(TestCase):
                 self.cs.search('foo')
         message = cm.exception.args[0]
         self.assertTrue('Request timed out' in message)
+
+    def test_resource_url(self):
+        entity_id = 'mongodb'
+        url = self.cs.resource_url(entity_id, "myresource", "22")
+        self.assertEqual('http://example.com/mongodb/resource/myresource/22',
+                         url)
