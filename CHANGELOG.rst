@@ -3,6 +3,11 @@
 History
 -------
 
+0.3.0 (2016-05-03)
+++++++++++++++++++
+
+Update JEM API calls to version 2.
+
 0.2.2 (2016-04-19)
 ++++++++++++++++++
 
@@ -26,7 +31,7 @@ Add resources in meta search and resource_url method.
 
 * Use Reference from jujubundlelib as a parameter.
 * Add list endpoint.
-  
+
 
 0.1.0 (2015-12-04)
 ++++++++++++++++++
