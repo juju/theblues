@@ -18,7 +18,7 @@ history = open('CHANGELOG.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='theblues',
-    version='0.2.2',
+    version='0.3.0',
     description='Python library for using the juju charm store API.',
     long_description=readme + '\n\n' + history,
     author='Juju GUI Developers',

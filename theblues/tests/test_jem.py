@@ -75,5 +75,5 @@ class TestJEM(TestCase):
         resp = self.jem.get_model('macaroons!', 'dalek', 'exterminate')
         self.assertEqual('42', resp)
         mocked.called_once_with(
-            'http://example.com/env/dalek/exterminate',
+            'http://example.com/models/dalek/exterminate',
             macaroons='macaroons!')
