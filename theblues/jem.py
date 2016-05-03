@@ -27,7 +27,7 @@ class JEM(object):
             # We don't use make_request b/c we don't want the request to be
             # fully handled. This lets us get the macaroon out of the request
             # and keep it.
-            response = requests.get("{}env".format(self.url))
+            response = requests.get("{}model".format(self.url))
         except Exception as e:
             log.info('Unable to contact jem due to: {}'.format(e))
             return None
@@ -56,7 +56,7 @@ class JEM(object):
         @param macaroons The discharged JEM macaroons.
         @return The json decoded list of environments.
         """
-        return make_request("{}env".format(self.url), macaroons=macaroons)
+        return make_request("{}model".format(self.url), macaroons=macaroons)
 
     def get_model(self, macaroons, user, name):
         """ Get a specified model.
@@ -66,5 +66,5 @@ class JEM(object):
         @param name The name of the model.
         @return The json decoded model.
         """
-        return make_request('{}env/{}/{}'.format(self.url, user, name),
+        return make_request('{}model/{}/{}'.format(self.url, user, name),
                             macaroons=macaroons)
