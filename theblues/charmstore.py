@@ -120,6 +120,7 @@ class CharmStore(object):
             'charm-metadata',
             'common-info',
             'extra-info',
+            'owner',
             'revision-info',
             'published',
             'stats',
