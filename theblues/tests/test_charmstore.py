@@ -702,9 +702,10 @@ class TestCharmStore(TestCase):
         self.assertEqual('http://example.com/mongodb-cluster/readme', url)
 
     def test_readme_not_found(self):
+        # A 404 not found error is returned when the readme cannot be found.
         with HTTMock(readme_404):
             with self.assertRaises(EntityNotFound):
-                self.cs.entity_readme_content('foo')
+                self.cs.entity_readme_content('precise/mysql-1')
 
     def test_readme_content(self):
         with HTTMock(readme_200):
