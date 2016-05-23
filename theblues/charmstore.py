@@ -433,7 +433,7 @@ class CharmStore(object):
         url = ('{url}/meta/any?id={meta}'
                '&include=bundle-metadata&include=stats'
                '&include=supported-series&include=extra-info'
-               '&include=bundle-unit-count').format(
+               '&include=bundle-unit-count&include=owner').format(
                    url=self.url, meta=meta)
         data = self._get(url)
         return data.json().values()
@@ -454,7 +454,7 @@ class CharmStore(object):
         url = (self.url + '/search?' +
                'include=charm-metadata&include=stats&include=supported-series'
                '&include=extra-info&include=bundle-unit-count'
-               '&limit=1000' + request)
+               '&limit=1000&include=owner' + request)
         data = self._get(url)
         return data.json().values()
 
