@@ -125,7 +125,8 @@ class CharmStore(object):
             'published',
             'stats',
             'resources',
-            'supported-series'
+            'supported-series',
+            'terms'
         ]
         if get_files:
             includes.append('manifest')
