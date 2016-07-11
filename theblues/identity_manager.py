@@ -90,6 +90,23 @@ class IdentityManager(object):
         json_macaroon = json.dumps(macaroon)
         return base64.urlsafe_b64encode(json_macaroon.encode('utf-8'))
 
+    def discharge_token(self, username):
+        """Discharge thoken for a user.
+
+        Raise a ServerError if an error occurs in the request process.
+
+        @param username The logged in user.
+        @return The resulting base64 encoded discharged token.
+        """
+        url = '{}discharge-token-for-user?username={}'.format(
+            self.url, username)
+        logging.debug('Sending identity info to {}'.format(url))
+        response = make_request(
+            url, method='GET', auth=self.auth, timeout=self.timeout)
+        macaroon = response['DischargeToken']
+        json_macaroon = json.dumps(macaroon)
+        return base64.urlsafe_b64encode(json_macaroon.encode('utf-8'))
+
     def _get_extra_info_url(self, username):
         """Return the base URL for extra-info requests.
 
