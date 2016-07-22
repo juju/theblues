@@ -74,6 +74,8 @@ class IdentityManager(object):
         @param username The logged in user.
         @param macaroon The macaroon returned from the charm store.
         @return The resulting base64 encoded macaroon.
+        @raises ServerError when making request to the discharge endpoint
+        InvalidMacaroon when the macaroon passedin or discharged is invalid
         """
         caveats = macaroon.third_party_caveats()
         if len(caveats) != 1:
@@ -86,8 +88,34 @@ class IdentityManager(object):
         logging.debug('data is {}'.format(caveats[0][1]))
         response = make_request(
             url, method='POST', auth=self.auth, timeout=self.timeout)
-        macaroon = response['Macaroon']
-        json_macaroon = json.dumps(macaroon)
+        try:
+            macaroon = response['Macaroon']
+            json_macaroon = json.dumps(macaroon)
+        except (KeyError, UnicodeDecodeError) as err:
+            raise InvalidMacaroon(
+                'Invalid macaroon from discharger: {}'.format(err.message))
+
+        return base64.urlsafe_b64encode(json_macaroon.encode('utf-8'))
+
+    def discharge_token(self, username):
+        """Discharge token for a user.
+
+        Raise a ServerError if an error occurs in the request process.
+
+        @param username The logged in user.
+        @return The resulting base64 encoded discharged token.
+        """
+        url = '{}discharge-token-for-user?username={}'.format(
+            self.url, username)
+        logging.debug('Sending identity info to {}'.format(url))
+        response = make_request(
+            url, method='GET', auth=self.auth, timeout=self.timeout)
+        try:
+            macaroon = response['DischargeToken']
+            json_macaroon = json.dumps(macaroon)
+        except (KeyError, UnicodeDecodeError) as err:
+            raise InvalidMacaroon(
+                'Invalid macaroon from discharger: {}'.format(err.message))
         return base64.urlsafe_b64encode(json_macaroon.encode('utf-8'))
 
     def _get_extra_info_url(self, username):

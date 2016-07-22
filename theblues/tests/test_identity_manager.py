@@ -24,6 +24,7 @@ _called = None
 
 LOGIN_PATH = '.*/v1/u/.*'
 DISCHARGE_PATH = '.*/discharge'
+DISCHARGE_TOKEN_PATH = '.*/discharge-token-for-user'
 EXTRA_INFO_PATH = '.*/extra-info'
 
 
@@ -52,6 +53,14 @@ def discharge_macaroon_200(url, request):
     return {
         'status_code': 200,
         'content': {'Macaroon': 'something'},
+    }
+
+
+@urlmatch(path=DISCHARGE_TOKEN_PATH)
+def discharge_token_200(url, request):
+    return {
+        'status_code': 200,
+        'content': {'DischargeToken': 'something'},
     }
 
 
@@ -180,6 +189,11 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
             auth=('user', 'password'),
             timeout=3.05,
             method='POST')
+
+    def test_discharge_token_successful(self):
+        with HTTMock(discharge_token_200):
+            results = self.idm.discharge_token('Brad')
+        self.assertEqual(base64.urlsafe_b64encode(b'"something"'), results)
 
 
 class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
