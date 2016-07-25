@@ -45,8 +45,15 @@ class Plans(object):
                 price=plan.get('price')), json))
         except (KeyError, TypeError, ValueError) as err:
             log.info(
-                'cannot process terms: invalid JSON response: {!r}'.format(
+                'cannot process plans: invalid JSON response: {!r}'.format(
                     json))
             raise ServerError(
                 'unable to get list of plans for {}: {}'.format(
                     reference.path(), err))
+        except Exception as exc:
+            log.info(
+                'cannot process plans: invalid JSON response: {!r}'.format(
+                    json))
+            raise ServerError(
+                'unable to get list of plans for {}: {}'.format(
+                    reference.path(), exc))

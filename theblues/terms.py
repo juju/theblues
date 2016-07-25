@@ -48,7 +48,7 @@ class Terms(object):
                             "%Y-%m-%dT%H:%M:%SZ"
                             ),
                         content=data['content'])
-        except (KeyError, TypeError, ValueError) as err:
+        except (KeyError, TypeError, ValueError, IndexError) as err:
             log.info(
                 'cannot process terms: invalid JSON response: {!r}'.format(
                     json))
