@@ -8,6 +8,7 @@ from theblues.errors import (
 from theblues.utils import (
     ensure_trailing_slash,
     make_request,
+    DEFAULT_TIMEOUT,
 )
 
 Term = namedtuple('Term',
@@ -17,7 +18,7 @@ TERMS_VERSION = 'v1'
 
 class Terms(object):
 
-    def __init__(self, url, timeout=3.05):
+    def __init__(self, url, timeout=DEFAULT_TIMEOUT):
         """Initializer.
 
         @param url The url to the Terms Service API.

@@ -15,6 +15,7 @@ from theblues.errors import (
 )
 
 
+DEFAULT_TIMEOUT = 3.05
 _error_message = 'Error during request: {url} message: {message}'
 
 

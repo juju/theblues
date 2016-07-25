@@ -6,12 +6,13 @@ from theblues.errors import log
 from theblues.utils import (
     ensure_trailing_slash,
     make_request,
+    DEFAULT_TIMEOUT,
 )
 
 
 class JEM(object):
 
-    def __init__(self, url, timeout=3.05):
+    def __init__(self, url, timeout=DEFAULT_TIMEOUT):
         """Initializer.
 
         @param url The url to the JEM API.

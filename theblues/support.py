@@ -11,6 +11,7 @@ from theblues.errors import (
 )
 from theblues.utils import (
     ensure_trailing_slash,
+    DEFAULT_TIMEOUT,
 )
 
 
@@ -33,7 +34,7 @@ class Support(object):
     # This represent the field name for business impact in SalesForce.
     BUSINESS_IMPACT = '00ND0000005lqBV'
 
-    def __init__(self, url, orgId, recordType, timeout=3.05):
+    def __init__(self, url, orgId, recordType, timeout=DEFAULT_TIMEOUT):
         """Initializer.
 
         @param url The url to the Support server.

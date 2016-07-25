@@ -15,12 +15,14 @@ from .errors import (
     EntityNotFound,
     ServerError,
     )
+from theblues.utils import DEFAULT_TIMEOUT
 
 
 class CharmStore(object):
     """A connection to the charmstore."""
 
-    def __init__(self, url, macaroons=None, timeout=3.05, verify=True):
+    def __init__(self, url, macaroons=None, timeout=DEFAULT_TIMEOUT,
+                 verify=True):
         """Initializer.
 
         @param url The url to the charmstore API.

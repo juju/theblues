@@ -17,7 +17,7 @@ from theblues.errors import (
 )
 from theblues.identity_manager import IdentityManager
 from theblues.tests import helpers
-
+from theblues.utils import DEFAULT_TIMEOUT
 
 _called = None
 
@@ -119,7 +119,7 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
             method='PUT',
             body='body',
             auth=('user', 'password'),
-            timeout=3.05,
+            timeout=DEFAULT_TIMEOUT,
         )
 
     def test_login_error_forbidden(self):
@@ -130,7 +130,8 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
         self.assertTrue(_called)
 
     def test_login_error_timeout(self):
-        with self.assert_timeout('http://example.com/v1/u/who', 3.05):
+        with self.assert_timeout('http://example.com/v1/u/who',
+                                 DEFAULT_TIMEOUT):
             self.idm.login('who', {})
 
     def _makeMockMacaroon(self, third_party_caveat=None):
@@ -169,7 +170,7 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
         expected_url = (
             'http://example.com/v1/discharger/discharge'
             '?discharge-for-user=who&id=identifier')
-        with self.assert_timeout(expected_url, 3.05):
+        with self.assert_timeout(expected_url, DEFAULT_TIMEOUT):
             self.idm.discharge('who', macaroon)
 
     @patch('theblues.identity_manager.make_request')
@@ -187,7 +188,7 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
             'http://example.com/v1/discharger/discharge'
             '?discharge-for-user=my.user%2Bname&id=identifier',
             auth=('user', 'password'),
-            timeout=3.05,
+            timeout=DEFAULT_TIMEOUT,
             method='POST')
 
     def test_discharge_token_successful(self):
@@ -210,7 +211,7 @@ class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
     def test_debug(self, mock):
         self.idm.debug()
         mock.assert_called_once_with(
-            'http://example.com:8082/v1/debug/status', timeout=3.05)
+            'http://example.com:8082/v1/debug/status', timeout=DEFAULT_TIMEOUT)
 
     @patch('theblues.identity_manager.make_request')
     def test_debug_fail(self, mock):
@@ -224,7 +225,7 @@ class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
         make_request_mock.assert_called_once_with(
             'http://example.com:8082/v1/u/jeffspinach',
             auth=('user', 'password'),
-            timeout=3.05
+            timeout=DEFAULT_TIMEOUT
         )
 
     def test_get_extra_info_ok(self):
@@ -234,7 +235,7 @@ class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
 
     def test_get_extra_info_error_timeout(self):
         expected_url = 'http://example.com:8082/v1/u/who/extra-info'
-        with self.assert_timeout(expected_url, 3.05):
+        with self.assert_timeout(expected_url, DEFAULT_TIMEOUT):
             self.idm.get_extra_info('who')
 
     def test_set_extra_info_ok(self):
@@ -245,5 +246,5 @@ class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
 
     def test_set_extra_info_error_timeout(self):
         expected_url = 'http://example.com:8082/v1/u/who/extra-info'
-        with self.assert_timeout(expected_url, 3.05):
+        with self.assert_timeout(expected_url, DEFAULT_TIMEOUT):
             self.idm.set_extra_info('who', {})
