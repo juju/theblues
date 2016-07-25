@@ -50,3 +50,10 @@ class Plans(object):
             raise ServerError(
                 'unable to get list of plans for {}: {}'.format(
                     reference.path(), err))
+        except Exception as exc:
+            log.info(
+                'cannot process plans: invalid JSON response: {!r}'.format(
+                    json))
+            raise ServerError(
+                'unable to get list of plans for {}: {}'.format(
+                    reference.path(), exc))
