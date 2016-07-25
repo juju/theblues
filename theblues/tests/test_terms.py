@@ -33,7 +33,8 @@ class TestTerms(TestCase):
                               created_on=now,
                               revision=4), resp)
         mocked.assert_called_once_with(
-            'http://example.com/v1/terms/name_of_terms?revision=3')
+            'http://example.com/v1/terms/name_of_terms?revision=3',
+            timeout=3.05)
 
     @patch('theblues.terms.make_request')
     def test_get_terms_exception(self, mocked):

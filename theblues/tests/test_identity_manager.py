@@ -223,7 +223,9 @@ class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
         self.idm.get_user('jeffspinach')
         make_request_mock.assert_called_once_with(
             'http://example.com:8082/v1/u/jeffspinach',
-            auth=('user', 'password'))
+            auth=('user', 'password'),
+            timeout=3.05
+        )
 
     def test_get_extra_info_ok(self):
         with HTTMock(extra):

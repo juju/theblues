@@ -63,7 +63,9 @@ class TestPlans(TestCase):
                  price='Free'),
         ), resp)
         mocked.assert_called_once_with(
-            'http://example.com/v2/charm?charm-url=cs:trusty/landscape-mock-0')
+            'http://example.com/v2/charm?charm-url=cs:trusty/landscape-mock-0',
+            timeout=3.05
+        )
 
     @patch('theblues.plans.make_request')
     def test_get_plans_exception(self, mocked):

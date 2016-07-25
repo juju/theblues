@@ -11,12 +11,15 @@ from theblues.utils import (
 
 class JEM(object):
 
-    def __init__(self, url):
+    def __init__(self, url, timeout=3.05):
         """Initializer.
 
         @param url The url to the JEM API.
+        @param timeout How long to wait before timing out a request in seconds;
+            a value of None means no timeout.
         """
         self.url = ensure_trailing_slash(url)
+        self.timeout = timeout
 
     def fetch_macaroon(self):
         """ Fetches the macaroon from the JEM service.
@@ -27,7 +30,13 @@ class JEM(object):
             # We don't use make_request b/c we don't want the request to be
             # fully handled. This lets us get the macaroon out of the request
             # and keep it.
-            response = requests.get("{}model".format(self.url))
+            url = "{}model".format(self.url)
+            response = requests.get(url)
+        except requests.exceptions.Timeout:
+            message = 'Request timed out: {url} timeout: {timeout}'
+            message = message.format(url=url, timeout=self.timeout)
+            log.error(message)
+            return None
         except Exception as e:
             log.info('Unable to contact jem due to: {}'.format(e))
             return None
@@ -56,7 +65,8 @@ class JEM(object):
         @param macaroons The discharged JEM macaroons.
         @return The json decoded list of environments.
         """
-        return make_request("{}model".format(self.url), macaroons=macaroons)
+        return make_request("{}model".format(self.url), macaroons=macaroons,
+                            timeout=self.timeout)
 
     def get_model(self, macaroons, user, name):
         """ Get a specified model.
@@ -67,4 +77,4 @@ class JEM(object):
         @return The json decoded model.
         """
         return make_request('{}model/{}/{}'.format(self.url, user, name),
-                            macaroons=macaroons)
+                            macaroons=macaroons, timeout=self.timeout)

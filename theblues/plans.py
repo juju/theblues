@@ -17,12 +17,15 @@ PLAN_VERSION = 'v2'
 
 class Plans(object):
 
-    def __init__(self, url):
+    def __init__(self, url, timeout=3.05):
         """Initializer.
 
         @param url The url to the Plan API.
+        @param timeout How long to wait before timing out a request in seconds;
+            a value of None means no timeout.
         """
         self.url = ensure_trailing_slash(url) + PLAN_VERSION + '/'
+        self.timeout = timeout
 
     def get_plans(self, reference):
         """Get the plans for a given charm.
@@ -33,7 +36,8 @@ class Plans(object):
         """
         json = make_request(
             '{}charm?charm-url={}'.format(self.url,
-                                          'cs:' + reference.path()))
+                                          'cs:' + reference.path()),
+            timeout=self.timeout)
         try:
             return tuple(map(lambda plan: Plan(
                 url=plan['url'], plan=plan['plan'],

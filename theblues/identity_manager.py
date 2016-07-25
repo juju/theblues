@@ -40,7 +40,7 @@ class IdentityManager(object):
         @param username the user's name.
         """
         url = '{}u/{}'.format(self.url, username)
-        return make_request(url, auth=self.auth)
+        return make_request(url, auth=self.auth, timeout=self.timeout)
 
     def debug(self):
         """Retrieve the debug information from the identity manager."""
