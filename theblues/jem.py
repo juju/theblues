@@ -32,7 +32,7 @@ class JEM(object):
             # fully handled. This lets us get the macaroon out of the request
             # and keep it.
             url = "{}model".format(self.url)
-            response = requests.get(url)
+            response = requests.get(url, timeout=self.timeout)
         except requests.exceptions.Timeout:
             message = 'Request timed out: {url} timeout: {timeout}'
             message = message.format(url=url, timeout=self.timeout)
