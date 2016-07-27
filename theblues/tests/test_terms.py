@@ -8,6 +8,7 @@ from theblues.terms import (
     Terms,
 )
 from theblues.errors import ServerError
+from theblues.utils import DEFAULT_TIMEOUT
 
 
 class TestTerms(TestCase):
@@ -33,7 +34,8 @@ class TestTerms(TestCase):
                               created_on=now,
                               revision=4), resp)
         mocked.assert_called_once_with(
-            'http://example.com/v1/terms/name_of_terms?revision=3')
+            'http://example.com/v1/terms/name_of_terms?revision=3',
+            timeout=DEFAULT_TIMEOUT)
 
     @patch('theblues.terms.make_request')
     def test_get_terms_exception(self, mocked):

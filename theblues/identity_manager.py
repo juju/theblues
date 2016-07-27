@@ -13,13 +13,14 @@ from theblues.errors import (
 from theblues.utils import (
     ensure_trailing_slash,
     make_request,
+    DEFAULT_TIMEOUT,
 )
 
 
 class IdentityManager(object):
     """Identity Manager API."""
 
-    def __init__(self, url, idm_user, idm_password, timeout=3.05):
+    def __init__(self, url, idm_user, idm_password, timeout=DEFAULT_TIMEOUT):
         """Initializer.
 
         @param url The url to the identity manager (IdM) API.
@@ -40,7 +41,7 @@ class IdentityManager(object):
         @param username the user's name.
         """
         url = '{}u/{}'.format(self.url, username)
-        return make_request(url, auth=self.auth)
+        return make_request(url, auth=self.auth, timeout=self.timeout)
 
     def debug(self):
         """Retrieve the debug information from the identity manager."""

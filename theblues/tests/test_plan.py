@@ -10,6 +10,7 @@ from theblues.plans import (
     Plans,
 )
 from theblues.errors import ServerError
+from theblues.utils import DEFAULT_TIMEOUT
 
 
 class TestPlans(TestCase):
@@ -63,7 +64,9 @@ class TestPlans(TestCase):
                  price='Free'),
         ), resp)
         mocked.assert_called_once_with(
-            'http://example.com/v2/charm?charm-url=cs:trusty/landscape-mock-0')
+            'http://example.com/v2/charm?charm-url=cs:trusty/landscape-mock-0',
+            timeout=DEFAULT_TIMEOUT
+        )
 
     @patch('theblues.plans.make_request')
     def test_get_plans_exception(self, mocked):

@@ -8,6 +8,7 @@ from theblues.errors import (
 from theblues.utils import (
     ensure_trailing_slash,
     make_request,
+    DEFAULT_TIMEOUT,
 )
 
 Term = namedtuple('Term',
@@ -17,12 +18,15 @@ TERMS_VERSION = 'v1'
 
 class Terms(object):
 
-    def __init__(self, url):
+    def __init__(self, url, timeout=DEFAULT_TIMEOUT):
         """Initializer.
 
         @param url The url to the Terms Service API.
+        @param timeout How long to wait in seconds before timing out a request;
+            a value of None means no timeout.
         """
         self.url = ensure_trailing_slash(url) + TERMS_VERSION + '/'
+        self.timeout = timeout
 
     def get_terms(self, name, revision=None):
         """ Retrieve a specific term and condition.
@@ -36,7 +40,7 @@ class Terms(object):
         url = '{}terms/{}'.format(self.url, name)
         if revision:
             url = '{}?revision={}'.format(url, revision)
-        json = make_request(url)
+        json = make_request(url, timeout=self.timeout)
         try:
             # This is always a list of one element.
             data = json[0]

@@ -1,6 +1,9 @@
 from email.utils import parseaddr
 import requests
-from requests.exceptions import RequestException
+from requests.exceptions import (
+    RequestException,
+    Timeout,
+    )
 
 from theblues.errors import (
     log,
@@ -8,6 +11,7 @@ from theblues.errors import (
 )
 from theblues.utils import (
     ensure_trailing_slash,
+    DEFAULT_TIMEOUT,
 )
 
 
@@ -30,16 +34,19 @@ class Support(object):
     # This represent the field name for business impact in SalesForce.
     BUSINESS_IMPACT = '00ND0000005lqBV'
 
-    def __init__(self, url, orgId, recordType):
+    def __init__(self, url, orgId, recordType, timeout=DEFAULT_TIMEOUT):
         """Initializer.
 
         @param url The url to the Support server.
         @param orgId the organization Id for SalesForce.
         @param recordType the record type.
+        @param timeout How long to wait before timing out a request in seconds;
+            a value of None means no timeout.
         """
         self.url = ensure_trailing_slash(url)
         self.orgId = orgId
         self.recordType = recordType
+        self.timeout = timeout
 
     def create_case(self, name, email, subject, description, businessImpact,
                     priority, phone):
@@ -85,8 +92,13 @@ class Support(object):
                 'priority': priority,
                 'phone': phone,
                 'external': 1
-                }, timeout=10)
+                }, timeout=self.timeout)
             r.raise_for_status()
+        except Timeout:
+            message = 'Request timed out: {url} timeout: {timeout}'
+            message = message.format(url=self.url, timeout=self.timeout)
+            log.error(message)
+            raise ServerError(message)
         except RequestException as err:
             log.info('cannot create case: {}'.format(err))
             raise ServerError(
