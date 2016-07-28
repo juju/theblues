@@ -3,6 +3,13 @@
 History
 -------
 
+0.3.4 (2016-07-28)
+++++++++++++++++++
+
+Unify timeout.
+Make sure we don't have unexpected exception.
+Add discharge token for user endpoint.
+
 0.3.3 (2016-07-04)
 ++++++++++++++++++
 
