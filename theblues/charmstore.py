@@ -91,7 +91,7 @@ class CharmStore(object):
         @param entity_id The ID either a reference or a string of the entity
                to get.
         @param includes Which metadata fields to include in the response.
-        @param channel Optional channel name, e.g. `development`.
+        @param channel Optional channel name, e.g. `stable`.
         '''
         queries = []
         if includes is not None:
