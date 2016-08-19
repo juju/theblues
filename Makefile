@@ -8,6 +8,8 @@ SPHINX := bin/sphinx-apidoc
 TOX := bin/tox
 VPART ?= patch
 
+SYSDEPS := libyaml-cpp-dev python-dev python3-dev python-yaml python3-yaml
+
 help:
 	@echo "bumpversion - bump version."
 	@echo "  By default bumps patch level. 'VPART=[major|minor|patch] make bumpversion' to specify."
@@ -58,6 +60,10 @@ dev: venv $(THEBLUES)
 ######
 # DEPS
 ######
+.PHONY: sysdeps
+sysdeps:
+	sudo apt-get install $(SYSDEPS)
+
 .PHONY: deps
 deps: venv lib/python2.7/site-packages/macaroons.so
 	$(PIP) install -r requirements.txt
