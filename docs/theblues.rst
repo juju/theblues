@@ -35,10 +35,10 @@ theblues.identity_manager module
     :undoc-members:
     :show-inheritance:
 
-theblues.jem module
+theblues.jimm module
 -------------------
 
-.. automodule:: theblues.jem
+.. automodule:: theblues.jimm
     :members:
     :undoc-members:
     :show-inheritance:

@@ -10,12 +10,12 @@ from theblues.utils import (
 )
 
 
-class JEM(object):
+class JIMM(object):
 
     def __init__(self, url, timeout=DEFAULT_TIMEOUT):
         """Initializer.
 
-        @param url The url to the JEM API.
+        @param url The url to the JIMM API.
         @param timeout How long to wait before timing out a request in seconds;
             a value of None means no timeout.
         """
@@ -23,7 +23,7 @@ class JEM(object):
         self.timeout = timeout
 
     def fetch_macaroon(self):
-        """ Fetches the macaroon from the JEM service.
+        """ Fetches the macaroon from the JIMM controller.
 
         @return The base64 encoded macaroon.
         """
@@ -39,7 +39,7 @@ class JEM(object):
             log.error(message)
             return None
         except Exception as e:
-            log.info('Unable to contact jem due to: {}'.format(e))
+            log.info('Unable to contact jimm due to: {}'.format(e))
             return None
 
         try:
@@ -60,22 +60,11 @@ class JEM(object):
 
         return json.dumps(raw_macaroon)
 
-    def get_users_models(self, macaroons):
-        """ Get the logged in user's models from the JEM service.
+    def list_models(self, macaroons):
+        """ Get the logged in user's models from the JIMM controller.
 
-        @param macaroons The discharged JEM macaroons.
+        @param macaroons The discharged JIMM macaroons.
         @return The json decoded list of environments.
         """
         return make_request("{}model".format(self.url), macaroons=macaroons,
                             timeout=self.timeout)
-
-    def get_model(self, macaroons, user, name):
-        """ Get a specified model.
-
-        @param macaroons The discharged JEM macaroons.
-        @param user The username of the model's owner.
-        @param name The name of the model.
-        @return The json decoded model.
-        """
-        return make_request('{}model/{}/{}'.format(self.url, user, name),
-                            macaroons=macaroons, timeout=self.timeout)

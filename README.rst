@@ -13,7 +13,7 @@ The easiest way to install theblues is via pip::
 Parts of theblues require the use of macaroons (e.g. parsing the return of
 `Charmstore.fetch_macaroon` or interacting with `IdentityManager.discharge`).
 
-To use authenticated aspects of theblues, e.g. jem, you'll need to be able to
+To use authenticated aspects of theblues, e.g. jimm, you'll need to be able to
 manage macaroons. theblues was developed around libmacaroons. On ubuntu, you
 can get libmacaroons from a ppa::
 
