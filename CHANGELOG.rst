@@ -3,6 +3,13 @@
 History
 -------
 
+0.3.5 (2016-09-30)
+++++++++++++++++++
+
+Discharge for user to return an encoded array.
+Update Makefile to work on clean trusty machine.
+Trivial rename of development channel.
+
 0.3.4 (2016-07-28)
 ++++++++++++++++++
 
