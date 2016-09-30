@@ -118,7 +118,7 @@ class IdentityManager(object):
             raise InvalidMacaroon(
                 'Invalid macaroon from discharger: {}'.format(err.message))
         return base64.urlsafe_b64encode("[{}]".format(
-            json_macaroon.encode('utf-8')))
+            json_macaroon).encode('utf-8'))
 
     def _get_extra_info_url(self, username):
         """Return the base URL for extra-info requests.
