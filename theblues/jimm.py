@@ -39,7 +39,7 @@ class JIMM(object):
             log.error(message)
             return None
         except Exception as e:
-            log.info('Unable to contact jimm due to: {}'.format(e))
+            log.info('Unable to contact JIMM due to: {}'.format(e))
             return None
 
         try:
