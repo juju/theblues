@@ -194,7 +194,7 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
     def test_discharge_token_successful(self):
         with HTTMock(discharge_token_200):
             results = self.idm.discharge_token('Brad')
-        self.assertEqual(base64.urlsafe_b64encode(b'"something"'), results)
+        self.assertEqual(b'["something"]', base64.urlsafe_b64decode(results))
 
 
 class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
