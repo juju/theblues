@@ -4,16 +4,16 @@ from mock import (
     )
 from unittest import TestCase
 
-from theblues.jem import JEM
+from theblues.jimm import JIMM
 
 
-class TestJEM(TestCase):
+class TestJIMM(TestCase):
 
     def setUp(self):
-        self.jem = JEM('http://example.com')
+        self.jimm = JIMM('http://example.com')
 
     def test_init(self):
-        self.assertEqual(self.jem.url, 'http://example.com/')
+        self.assertEqual(self.jimm.url, 'http://example.com/')
 
     @patch('requests.get')
     def test_fetch_macaroon(self, mocked):
@@ -28,7 +28,7 @@ class TestJEM(TestCase):
                 }
 
         mocked.return_value = MockResponse()
-        resp = self.jem.fetch_macaroon()
+        resp = self.jimm.fetch_macaroon()
         self.assertEqual('{"foo": "bar"}', resp)
 
     @patch('requests.get')
@@ -36,7 +36,7 @@ class TestJEM(TestCase):
         def boom():
             raise ValueError
         mocked.side_effect = boom
-        resp = self.jem.fetch_macaroon()
+        resp = self.jimm.fetch_macaroon()
         self.assertIsNone(resp)
 
     @patch('requests.get')
@@ -47,7 +47,7 @@ class TestJEM(TestCase):
         mock_response.json = Mock()
         mock_response.json.side_effect = boom
         mocked.return_value = mock_response
-        resp = self.jem.fetch_macaroon()
+        resp = self.jimm.fetch_macaroon()
         self.assertIsNone(resp)
 
     @patch('requests.get')
@@ -58,22 +58,13 @@ class TestJEM(TestCase):
             'boom': "this fails"
         }
         mocked.return_value = mock_response
-        resp = self.jem.fetch_macaroon()
+        resp = self.jimm.fetch_macaroon()
         self.assertIsNone(resp)
 
-    @patch('theblues.jem.make_request')
-    def test_get_user_models(self, mocked):
+    @patch('theblues.jimm.make_request')
+    def test_list_models(self, mocked):
         mocked.return_value = '42'
-        resp = self.jem.get_users_models('macaroons!')
+        resp = self.jimm.list_models('macaroons!')
         self.assertEqual('42', resp)
         mocked.called_once_with(
             'http://example.com/env', macaroons='macaroons!')
-
-    @patch('theblues.jem.make_request')
-    def test_get_model(self, mocked):
-        mocked.return_value = '42'
-        resp = self.jem.get_model('macaroons!', 'dalek', 'exterminate')
-        self.assertEqual('42', resp)
-        mocked.called_once_with(
-            'http://example.com/models/dalek/exterminate',
-            macaroons='macaroons!')
