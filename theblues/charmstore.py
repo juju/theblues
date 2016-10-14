@@ -486,6 +486,8 @@ def _get_path(entity_id):
         path = entity_id.path()
     except AttributeError:
         path = entity_id
+    if path.startswith('cs:'):
+        path = path[3:]
     return path
 
 

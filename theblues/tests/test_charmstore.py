@@ -20,6 +20,7 @@ from theblues.charmstore import (
 
 
 SAMPLE_CHARM = 'precise/mysql-1'
+SAMPLE_CHARM_ID = 'cs:precise/mysql-1'
 SAMPLE_BUNDLE = 'mongodb-cluster'
 SAMPLE_FILE = 'README.md'
 CONFIG_PATH = '/%s/meta/charm-config' % SAMPLE_CHARM
@@ -372,6 +373,11 @@ class TestCharmStore(TestCase):
             data = self.cs.charm(SAMPLE_CHARM)
         self.assertEqual({'Meta': {'charm-metadata': {'exists': True}}}, data)
 
+    def test_entity_full_id(self):
+        with HTTMock(entity_200):
+            data = self.cs.charm(SAMPLE_CHARM_ID)
+        self.assertEqual({'Meta': {'charm-metadata': {'exists': True}}}, data)
+
     def test_entity_reference(self):
         with HTTMock(entity_200):
             data = self.cs.charm(
@@ -405,6 +411,11 @@ class TestCharmStore(TestCase):
         with HTTMock(entity_404):
             with self.assertRaises(EntityNotFound):
                 self.cs.charm(SAMPLE_CHARM)
+
+    def test_charm_error_id(self):
+        with HTTMock(entity_404):
+            with self.assertRaises(EntityNotFound):
+                self.cs.charm(SAMPLE_CHARM_ID)
 
     def test_charm_error_407(self):
         with HTTMock(entity_407):
