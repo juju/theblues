@@ -3,6 +3,12 @@
 History
 -------
 
+0.3.7 (2016-11-03)
+++++++++++++++++++
+
+Supports overriding the default URL for backwards compatibility.
+Accept cs: prefix on entity IDs
+
 0.3.6 (2016-10-03)
 ++++++++++++++++++
     
