@@ -15,7 +15,7 @@ from theblues.errors import (
 )
 
 
-API_URL = 'https://api.jujucharms.com/v5'
+API_URL = 'https://api.jujucharms.com/charmstore/v5'
 DEFAULT_TIMEOUT = 3.05
 _error_message = 'Error during request: {url} message: {message}'
 
