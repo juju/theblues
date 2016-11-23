@@ -3,6 +3,11 @@
 History
 -------
 
+0.3.8 (2016-11-23)
+++++++++++++++++++
+
+Properly quote the user name in the idm query when requesting discharge tokens.
+
 0.3.7 (2016-11-03)
 ++++++++++++++++++
 
@@ -11,7 +16,7 @@ Accept cs: prefix on entity IDs
 
 0.3.6 (2016-10-03)
 ++++++++++++++++++
-    
+
 Replaces JEM API with JIMM API.
 
 0.3.5 (2016-09-30)
