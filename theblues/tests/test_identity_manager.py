@@ -196,6 +196,18 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
             results = self.idm.discharge_token('Brad')
         self.assertEqual(b'["something"]', base64.urlsafe_b64decode(results))
 
+    def test_discharge_token_username_quoted(self):
+        # The username query sent to the identity manager is properly quoted.
+        @urlmatch(path=DISCHARGE_TOKEN_PATH)
+        def handler(url, _):
+            self.assertEqual('username=my.user%2Bname', url.query)
+            return {
+                'status_code': 200,
+                'content': {'DischargeToken': 'something'},
+            }
+        with HTTMock(handler):
+            self.idm.discharge_token('my.user+name')
+
 
 class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
 
