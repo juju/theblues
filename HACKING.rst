@@ -103,9 +103,9 @@ well.  You can then use the command `NO_VERIFY=1 git commit` to commit or
 lint.  Running the command without the variable will cause lint to prevent the
 command from succeeding if your branch does not lint.
 
-Read more about hooks and how to install them `here
-<https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>`_. Please note that
-this will only work in environments where the app can build and run.  Since the
-application will not run in OS X, you will have to run your push or commit from
-vagrant instead.
+Read more about hooks and how to install them at
+http://www.git-scm.com/book/en/v2/Customizing-Git-Git-Hooks. Please note
+that this will only work in environments where the app can build and run.
+Since the application will not run in OS X, you will have to run your push or
+commit from vagrant instead.
 
