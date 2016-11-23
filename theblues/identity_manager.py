@@ -107,7 +107,7 @@ class IdentityManager(object):
         @return The resulting base64 encoded discharged token.
         """
         url = '{}discharge-token-for-user?username={}'.format(
-            self.url, username)
+            self.url, quote(username))
         logging.debug('Sending identity info to {}'.format(url))
         response = make_request(
             url, method='GET', auth=self.auth, timeout=self.timeout)
