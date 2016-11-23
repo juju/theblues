@@ -104,7 +104,7 @@ lint.  Running the command without the variable will cause lint to prevent the
 command from succeeding if your branch does not lint.
 
 Read more about hooks and how to install them `here
-<http://www.git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>`_. Please note that
+<https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Hooks>`_. Please note that
 this will only work in environments where the app can build and run.  Since the
 application will not run in OS X, you will have to run your push or commit from
 vagrant instead.

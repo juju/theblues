@@ -36,9 +36,33 @@ theblues.identity_manager module
     :show-inheritance:
 
 theblues.jimm module
--------------------
+--------------------
 
 .. automodule:: theblues.jimm
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+theblues.plans module
+---------------------
+
+.. automodule:: theblues.plans
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+theblues.support module
+-----------------------
+
+.. automodule:: theblues.support
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+theblues.terms module
+---------------------
+
+.. automodule:: theblues.terms
     :members:
     :undoc-members:
     :show-inheritance:
