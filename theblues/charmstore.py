@@ -119,6 +119,7 @@ class CharmStore(object):
             'bundle-metadata',
             'bundle-unit-count',
             'bundles-containing',
+            'charm-actions',
             'charm-config',
             'charm-metadata',
             'common-info',
