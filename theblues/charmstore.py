@@ -124,6 +124,7 @@ class CharmStore(object):
             'charm-metadata',
             'common-info',
             'extra-info',
+            'id-revision'
             'owner',
             'revision-info',
             'published',
