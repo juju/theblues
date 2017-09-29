@@ -8,7 +8,7 @@ SPHINX := bin/sphinx-apidoc
 TOX := bin/tox
 VPART ?= patch
 
-SYSDEPS := libyaml-cpp-dev python-dev python3-dev python-yaml python3-yaml
+SYSDEPS := libyaml-cpp-dev python-dev python3-dev python-yaml python3-yaml libsodium-dev
 
 help:
 	@echo "bumpversion - bump version."
@@ -62,7 +62,7 @@ dev: venv $(THEBLUES)
 ######
 .PHONY: sysdeps
 sysdeps:
-	sudo apt-get install $(SYSDEPS)
+	sudo apt-get install --yes $(SYSDEPS)
 
 .PHONY: deps
 deps: venv lib/python2.7/site-packages/macaroons.so

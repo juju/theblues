@@ -1,6 +1,8 @@
 from collections import namedtuple
 import datetime
 
+from macaroonbakery import httpbakery
+
 from theblues.errors import (
     log,
     ServerError,
@@ -18,15 +20,20 @@ TERMS_VERSION = 'v1'
 
 class Terms(object):
 
-    def __init__(self, url, timeout=DEFAULT_TIMEOUT):
+    def __init__(self, url, timeout=DEFAULT_TIMEOUT, client=None):
         """Initializer.
 
         @param url The url to the Terms Service API.
         @param timeout How long to wait in seconds before timing out a request;
             a value of None means no timeout.
+        @param client (httpbakery.Client) holds a context for making http
+        requests with macaroons.
         """
         self.url = ensure_trailing_slash(url) + TERMS_VERSION + '/'
         self.timeout = timeout
+        if client is None:
+            client = httpbakery.Client()
+        self._client = client
 
     def get_terms(self, name, revision=None):
         """ Retrieve a specific term and condition.
@@ -40,7 +47,7 @@ class Terms(object):
         url = '{}terms/{}'.format(self.url, name)
         if revision:
             url = '{}?revision={}'.format(url, revision)
-        json = make_request(url, timeout=self.timeout)
+        json = make_request(url, timeout=self.timeout, client=self._client)
         try:
             # This is always a list of one element.
             data = json[0]

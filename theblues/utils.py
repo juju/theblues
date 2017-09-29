@@ -28,23 +28,26 @@ def _server_error_message(url, message):
 
 
 def make_request(
-        url, method='GET', query=None, body=None, auth=None, macaroons=None,
-        timeout=10):
+        url, method='GET', query=None, body=None, auth=None, timeout=10,
+        client=None):
     """Make a request with the provided data.
 
     @param url The url to make the request to.
     @param method The HTTP request method (defaulting to "GET").
     @param query A dict of the query key and values.
     @param body The optional body as a string or as a JSON decoded dict.
-    @param auth The optional username and password as a tuple.
+    @param auth The optional username and password as a tuple,
+    not used if client is not None
     @param timeout The request timeout in seconds, defaulting to 10 seconds.
+    @param client (httpbakery.Client) holds a context for making http
+    requests with macaroons.
 
     POST/PUT request bodies are assumed to be in JSON format.
     Return the response content as a JSON decoded object, or an empty dict.
     Raise a ServerError if a problem occurs in the request/response process.
     Raise a ValueError if invalid parameters are provided.
     """
-    kwargs = {'auth': auth, 'timeout': timeout, 'headers': {}}
+    kwargs = {'timeout': timeout, 'headers': {}}
     # Handle the request body.
     if body is not None:
         if isinstance(body, collections.Mapping):
@@ -58,9 +61,9 @@ def make_request(
         kwargs['headers'] = {'Content-Type': 'application/json'}
     else:
         raise ValueError('invalid method {}'.format(method))
-    if macaroons is not None:
-        kwargs['headers']['Bakery-Protocol-Version'] = 1
-        kwargs['headers']['Macaroons'] = macaroons
+
+    kwargs['auth'] = auth if client is None else client.auth()
+
     api_method = getattr(requests, method.lower())
     # Perform the request.
     try:

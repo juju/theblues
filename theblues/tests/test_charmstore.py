@@ -135,21 +135,6 @@ def search_200_escaped(url, request):
 
 
 @urlmatch(path='({})|({})'.format(SEARCH_PATH, LIST_PATH))
-def search_200_with_macaroon(url, request):
-    expected = "[macaroon1, macaroon2]"
-    macaroons = request._cookies.get('macaroon-storefront')
-
-    if expected != macaroons:
-        raise AssertionError(
-            'Macaroon not set correctly: %s vs %s' % (macaroons, expected))
-
-    return {
-        'status_code': 200,
-        'content': b'{"Results": [{"Id": "cs:foo/bar-0"}]}'
-        }
-
-
-@urlmatch(path='({})|({})'.format(SEARCH_PATH, LIST_PATH))
 def search_400(url, request):
     return {
         'status_code': 400,
@@ -733,29 +718,6 @@ class TestCharmStore(TestCase):
         with HTTMock(debug_200):
             debug_data = self.cs.debug()
             self.assertEqual('all clear', debug_data['status'])
-
-    def test_fetch_macaroon_successful(self):
-        with HTTMock(fetch_macaroon_200):
-            results = self.cs.fetch_macaroon()
-            self.assertEqual('{"mymacaroon": "something"}', results)
-
-    def test_fetch_macaroon_not_found(self):
-        with HTTMock(fetch_macaroon_404):
-            with self.assertRaises(EntityNotFound) as cm:
-                self.cs.fetch_macaroon()
-        self.assertEqual(cm.exception.args, ('http://example.com/macaroon',))
-
-    def test_search_with_macaroon(self):
-        with HTTMock(search_200_with_macaroon):
-            self.cs.macaroons = "[macaroon1, macaroon2]"
-            results = self.cs.search('foo')
-            self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
-
-    def test_list_with_macaroon(self):
-        with HTTMock(search_200_with_macaroon):
-            self.cs.macaroons = "[macaroon1, macaroon2]"
-            results = self.cs.list()
-            self.assertEqual([{'Id': 'cs:foo/bar-0'}], results)
 
     def test_timeout(self):
         with HTTMock(search_timeout):
