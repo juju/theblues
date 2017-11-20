@@ -5,6 +5,8 @@ from jujubundlelib import references
 from mock import patch
 from unittest import TestCase
 
+from macaroonbakery import httpbakery
+
 from theblues.plans import (
     Plan,
     Plans,
@@ -16,7 +18,8 @@ from theblues.utils import DEFAULT_TIMEOUT
 class TestPlans(TestCase):
 
     def setUp(self):
-        self.plans = Plans('http://example.com')
+        self.client = httpbakery.Client()
+        self.plans = Plans('http://example.com', client=self.client)
         self.ref = references.Reference.from_string(
             'cs:trusty/landscape-mock-0')
 
@@ -65,7 +68,8 @@ class TestPlans(TestCase):
         ), resp)
         mocked.assert_called_once_with(
             'http://example.com/v2/charm?charm-url=cs:trusty/landscape-mock-0',
-            timeout=DEFAULT_TIMEOUT
+            timeout=DEFAULT_TIMEOUT,
+            client=self.client
         )
 
     @patch('theblues.plans.make_request')

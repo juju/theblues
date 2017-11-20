@@ -3,6 +3,8 @@ import json
 from mock import patch
 from unittest import TestCase
 
+from macaroonbakery import httpbakery
+
 from theblues.terms import (
     Term,
     Terms,
@@ -14,7 +16,8 @@ from theblues.utils import DEFAULT_TIMEOUT
 class TestTerms(TestCase):
 
     def setUp(self):
-        self.terms = Terms('http://example.com')
+        self.client = httpbakery.Client()
+        self.terms = Terms('http://example.com', client=self.client)
 
     def test_init(self):
         self.assertEqual(self.terms.url, 'http://example.com/v1/')
@@ -35,7 +38,9 @@ class TestTerms(TestCase):
                               revision=4), resp)
         mocked.assert_called_once_with(
             'http://example.com/v1/terms/name_of_terms?revision=3',
-            timeout=DEFAULT_TIMEOUT)
+            timeout=DEFAULT_TIMEOUT,
+            client=self.client
+        )
 
     @patch('theblues.terms.make_request')
     def test_get_terms_exception(self, mocked):

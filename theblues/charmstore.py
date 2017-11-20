@@ -4,6 +4,7 @@ try:
 except:
     from urllib.parse import urlencode
 
+from macaroonbakery import httpbakery
 import requests
 from requests.exceptions import (
     HTTPError,
@@ -21,40 +22,41 @@ from theblues.utils import DEFAULT_TIMEOUT, API_URL
 class CharmStore(object):
     """A connection to the charmstore."""
 
-    def __init__(self, url=API_URL, macaroons=None,
-                 timeout=DEFAULT_TIMEOUT, verify=True):
+    def __init__(self, url=API_URL, timeout=DEFAULT_TIMEOUT,
+                 verify=True, client=None, cookies=None):
         """Initializer.
 
         @param url The base url to the charmstore API.  Defaults
             to `https://api.jujucharms.com/`.
-        @param macaroons The optional discharged macaroon allowing access to
-            authenticated queries against the charmstore.
         @param timeout How long to wait in seconds before timing out a request;
             a value of None means no timeout.
         @param verify Whether to verify the certificate for the charmstore API
             host.
+        @param client (httpbakery.Client) holds a context for making http
+        requests with macaroons.
+        @param cookies (which act as dict) holds cookies to be sent with the
+        requests.
         """
         super(CharmStore, self).__init__()
         self.url = url
         self.verify = verify
         self.timeout = timeout
-        self.macaroons = macaroons
+        self.cookies = cookies
+        if client is None:
+            client = httpbakery.Client()
+        self._client = client
 
     def _get(self, url):
         """Make a get request against the charmstore.
 
         This method is used by other API methods to standardize querying.
-
         @param url The full url to query
             (e.g. https://api.jujucharms.com/charmstore/v4/macaroon)
         """
-        if self.macaroons is None or len(self.macaroons) == 0:
-            cookies = {}
-        else:
-            cookies = dict([('macaroon-storefront', self.macaroons)])
         try:
-            response = requests.get(url, verify=self.verify, cookies=cookies,
-                                    timeout=self.timeout)
+            response = requests.get(url, verify=self.verify,
+                                    cookies=self.cookies, timeout=self.timeout,
+                                    auth=self._client.auth())
             response.raise_for_status()
             return response
         except HTTPError as exc:
@@ -80,11 +82,11 @@ class CharmStore(object):
             message = ('Error during request: {url} '
                        'message: {message}').format(
                            url=url,
-                           message=exc.message)
+                           message=exc)
             logging.error(message)
             raise ServerError(exc.args[0][1].errno,
                               exc.args[0][1].strerror,
-                              exc.message)
+                              message)
 
     def _meta(self, entity_id, includes, channel=None):
         '''Retrieve metadata about an entity in the charmstore.
@@ -468,13 +470,6 @@ class CharmStore(object):
         url = '{}/debug/status'.format(self.url)
         data = self._get(url)
         return data.json()
-
-    def fetch_macaroon(self):
-        '''Fetch a macaroon from charmstore.'''
-        url = '{charmstore_url}/macaroon'.format(
-            charmstore_url=self.url)
-        response = self._get(url)
-        return response.text
 
 
 def _get_path(entity_id):

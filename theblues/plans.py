@@ -1,6 +1,8 @@
 from collections import namedtuple
 import datetime
 
+from macaroonbakery import httpbakery
+
 from theblues.errors import (
     log,
     ServerError,
@@ -18,15 +20,20 @@ PLAN_VERSION = 'v2'
 
 class Plans(object):
 
-    def __init__(self, url, timeout=DEFAULT_TIMEOUT):
+    def __init__(self, url, timeout=DEFAULT_TIMEOUT, client=None):
         """Initializer.
 
         @param url The url to the Plan API.
         @param timeout How long to wait before timing out a request in seconds;
             a value of None means no timeout.
+        @param client (httpbakery.Client) holds a context for making http
+        requests with macaroons.
         """
         self.url = ensure_trailing_slash(url) + PLAN_VERSION + '/'
         self.timeout = timeout
+        if client is None:
+            client = httpbakery.Client()
+        self._client = client
 
     def get_plans(self, reference):
         """Get the plans for a given charm.
@@ -38,7 +45,7 @@ class Plans(object):
         json = make_request(
             '{}charm?charm-url={}'.format(self.url,
                                           'cs:' + reference.path()),
-            timeout=self.timeout)
+            timeout=self.timeout, client=self._client)
         try:
             return tuple(map(lambda plan: Plan(
                 url=plan['url'], plan=plan['plan'],
