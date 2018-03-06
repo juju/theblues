@@ -103,3 +103,56 @@ class TestPlans(TestCase):
             '}]')
         with self.assertRaises(ServerError):
             self.plans.get_plans(self.ref)
+
+    @patch('theblues.plans.make_request')
+    def test_list_wallets(self, mocked):
+        mocked.return_value = {
+            'wallets': [
+                {
+                    'owner': 'rose',
+                    'wallet': 'default',
+                    'limit': '100',
+                    'budgeted': '0',
+        			'unallocated': '100',
+        			'available': '100.00',
+        			'consumed': '0.00',
+        			'default': True,
+                }
+            ],
+            'total': {
+                'limit': '100',
+        		'budgeted': '0',
+        		'available': '100.00',
+        		'unallocated': '100',
+        		'usage': '0%',
+        		'consumed': '0.00',
+            },
+            'credit': '10000',
+        }
+        result = self.plans.list_wallets()
+        self.assertEqual(result, '')
+
+    @patch('theblues.plans.make_request')
+    def test_list_wallets_exception(self, mocked):
+        pass
+
+    @patch('theblues.plans.make_request')
+    def test_get_wallet(self, mocked):
+        mocked.return_value = {
+            'limit': '100',
+            'total': {
+                'limit': '100',
+        		'budgeted': '0',
+        		'available': '100.00',
+        		'unallocated': '100',
+        		'usage': '0%',
+        		'consumed': '0.00',
+            },
+            'credit': '10000',
+        }
+        result = self.plans.get_wallet('default')
+        self.assertEqual(result, '')
+
+    @patch('theblues.plans.make_request')
+    def test_get_wallet_exception(self, mocked):
+        pass
