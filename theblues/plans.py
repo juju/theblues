@@ -88,7 +88,7 @@ class Plans(object):
             timeout=self.timeout,
             client=self._client)
         try:
-            response['wallets'] = map(
+            response['wallets'] = tuple(map(
                 lambda wallet: Wallet(
                     owner=wallet['owner'],
                     wallet=wallet['wallet'],
@@ -97,7 +97,7 @@ class Plans(object):
                     unallocated=wallet['unallocated'],
                     available=wallet['available'],
                     consumed=wallet['consumed'],
-                    default=wallet['default']), response['wallets'])
+                    default='default' in wallet), response['wallets']))
             total = response['total']
             response['total'] = WalletTotal(
                 limit=total['limit'],

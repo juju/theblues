@@ -10,6 +10,8 @@ from macaroonbakery import httpbakery
 from theblues.plans import (
     Plan,
     Plans,
+    Wallet,
+    WalletTotal,
 )
 from theblues.errors import ServerError
 from theblues.utils import DEFAULT_TIMEOUT
@@ -117,20 +119,58 @@ class TestPlans(TestCase):
         			'available': '100.00',
         			'consumed': '0.00',
         			'default': True,
+                },
+                {
+                    'owner': 'rose',
+                    'wallet': 'qa',
+                    'limit': '10',
+                    'budgeted': '0',
+                    'unallocated': '10',
+                    'available': '10.00',
+                    'consumed': '0.00',
                 }
             ],
             'total': {
-                'limit': '100',
+                'limit': '110',
         		'budgeted': '0',
-        		'available': '100.00',
-        		'unallocated': '100',
+        		'available': '110.00',
+        		'unallocated': '110',
         		'usage': '0%',
         		'consumed': '0.00',
             },
             'credit': '10000',
         }
         result = self.plans.list_wallets()
-        self.assertEqual(result, '')
+        self.assertEqual(result, {
+            'wallets': (
+                Wallet(
+                    owner='rose',
+                    wallet='default',
+                    limit='100',
+                    budgeted='0',
+                    unallocated='100',
+                    available='100.00',
+                    consumed='0.00',
+                    default=True),
+                Wallet(
+                    owner='rose',
+                    wallet='qa',
+                    limit='10',
+                    budgeted='0',
+                    unallocated='10',
+                    available='10.00',
+                    consumed='0.00',
+                    default=False),
+            ),
+            'total': WalletTotal(
+                limit='110',
+                budgeted='0',
+                available='110.00',
+                unallocated='110',
+                usage='0%',
+                consumed='0.00'),
+            'credit': '10000',
+        })
 
     @patch('theblues.plans.make_request')
     def test_list_wallets_exception(self, mocked):
@@ -151,7 +191,17 @@ class TestPlans(TestCase):
             'credit': '10000',
         }
         result = self.plans.get_wallet('default')
-        self.assertEqual(result, '')
+        self.assertEqual(result, {
+            'limit': '100',
+            'total': WalletTotal(
+                limit='100',
+                budgeted='0',
+                available='100.00',
+                unallocated='100',
+                usage='0%',
+                consumed='0.00'),
+            'credit': '10000',
+        })
 
     @patch('theblues.plans.make_request')
     def test_get_wallet_exception(self, mocked):
