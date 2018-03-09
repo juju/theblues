@@ -26,7 +26,7 @@ class TestPlans(TestCase):
             'cs:trusty/landscape-mock-0')
 
     def test_init(self):
-        self.assertEqual(self.plans.url, 'http://example.com/v2/')
+        self.assertEqual(self.plans.url, 'http://example.com/v3/')
 
     @patch('theblues.plans.make_request')
     def test_get_plans(self, mocked):
@@ -69,7 +69,7 @@ class TestPlans(TestCase):
                  price='Free'),
         ), resp)
         mocked.assert_called_once_with(
-            'http://example.com/v2/charm?charm-url=cs:trusty/landscape-mock-0',
+            'http://example.com/v3/charm?charm-url=cs:trusty/landscape-mock-0',
             timeout=DEFAULT_TIMEOUT,
             client=self.client
         )
@@ -174,7 +174,19 @@ class TestPlans(TestCase):
 
     @patch('theblues.plans.make_request')
     def test_list_wallets_exception(self, mocked):
-        pass
+        mocked.return_value = {
+            'wallets': [
+                {
+                    'bad': 'wolf',
+                },
+            ],
+            'total': {
+                'dalek': True,
+            },
+            'credit': '10000',
+        }
+        with self.assertRaises(ServerError):
+            result = self.plans.list_wallets()
 
     @patch('theblues.plans.make_request')
     def test_get_wallet(self, mocked):
@@ -205,4 +217,12 @@ class TestPlans(TestCase):
 
     @patch('theblues.plans.make_request')
     def test_get_wallet_exception(self, mocked):
-        pass
+        mocked.return_value = {
+            'limit': '100',
+            'total': {
+        		'bad': 'wolf',
+            },
+            'credit': '10000',
+        }
+        with self.assertRaises(ServerError):
+            result = self.plans.get_wallet('default')

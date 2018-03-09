@@ -22,7 +22,7 @@ Wallet = namedtuple('Wallet',
 WalletTotal = namedtuple(
     'WalletTotal',
     ['limit', 'budgeted', 'unallocated', 'available', 'consumed', 'usage'])
-PLAN_VERSION = 'v2'
+PLAN_VERSION = 'v3'
 
 
 class Plans(object):
@@ -80,7 +80,8 @@ class Plans(object):
     def list_wallets(self):
         """Get the list of wallets
 
-        @return an object of wallets, a total, and available credit.
+        @return an object containing a list of wallets, a total, and available
+            credit.
         @raise ServerError
         """
         response = make_request(
@@ -107,7 +108,7 @@ class Plans(object):
                 usage=total['usage'],
                 consumed=total['consumed'])
             return response
-        except (KeyError, TypeError, ValueError, Exception) as err:
+        except Exception as err:
             log.info(
                 'cannot process wallets: invalid JSON response: {!r}'.format(
                     response))
@@ -118,7 +119,7 @@ class Plans(object):
         """Get a single wallet.
 
         @param the name of the wallet.
-        @return an object of wallets, a total, and available credit.
+        @return the wallet's total.
         @raise ServerError
         """
         response = make_request(
@@ -135,50 +136,121 @@ class Plans(object):
                 usage=total['usage'],
                 consumed=total['consumed'])
             return response
-        except (KeyError, TypeError, ValueError, Exception) as err:
+        except (KeyError, TypeError, ValueError) as err:
             log.info(
                 'cannot process wallet: invalid JSON response: {!r}'.format(
                     response))
             raise ServerError(
-                'unable to get list of wallet: {}'.format(err))
+                'unable to get list of wallets: {}'.format(err))
+        except Exception as exc:
+            log.info(
+                'cannot get wallet from server: {!r}'.format(exc))
+        raise ServerError(
+            'unable to get list of wallets: {}'.format(exc))
 
-    # def update_wallet(self, wallet_name, value):
-    #     # Patch to /wallet/{wallet}
-    #     request = {
-    #         'update': {
-    #             'limit': value,
-    #         }
-    #     }
-    #     response = make_request(
-    #         '{}wallet/{}'.format(wallet_name),
-    #         method='PATCH',
-    #         body=json.dumps(request),
-    #         timeout=self.timeout,
-    #         client=self._client)
-    #     pass
-    #
-    # def create_wallet(self, wallet_name, value):
-    #     # Post to /wallet
-    #     request = {
-    #         'wallet': wallet_name,
-    #         'limit': value,
-    #     }
-    #     response = make_request(
-    #         '{}wallet'.format(wallet_name),
-    #         method='POST',
-    #         body=json.dumps(request),
-    #         timeout=self.timeout,
-    #         client=self._client)
-    #     pass
-    #
-    # def delete_wallet(self, wallet_name):
-    #     pass
-    #
-    # def create_budget(self, wallet_name, budget):
-    #     pass
-    #
-    # def update_budget(self, model_uuid, wallet_name, value):
-    #     pass
-    #
-    # def delete_budget(self, model_uuid):
-    #     pass
+    def update_wallet(self, wallet_name, value):
+        """Update a wallet with a new limit.
+
+        @param the name of the wallet.
+        @param the new value of the limit.
+        @return the result form the server.
+        @raise ServerError via make_request.
+        """
+        request = {
+            'update': {
+                'limit': value,
+            }
+        }
+        return make_request(
+            '{}wallet/{}'.format(self.url, wallet_name),
+            method='PATCH',
+            body=request,
+            timeout=self.timeout,
+            client=self._client)
+
+    def create_wallet(self, wallet_name, value):
+        """Create a new wallet.
+
+        @param the name of the wallet.
+        @param the value of the limit.
+        @return the result form the server.
+        @raise ServerError via make_request.
+        """
+        request = {
+            'wallet': wallet_name,
+            'limit': value,
+        }
+        return make_request(
+            '{}wallet'.format(self.url),
+            method='POST',
+            body=request,
+            timeout=self.timeout,
+            client=self._client)
+
+    def delete_wallet(self, wallet_name):
+        """Delete a wallet.
+
+        @param the name of the wallet.
+        @return the result form the server.
+        @raise ServerError via make_request.
+        """
+        return make_request(
+            '{}wallet/{}'.format(self.url, wallet_name),
+            method='DELETE',
+            timeout=self.timeout,
+            client=self._client)
+
+    def create_budget(self, wallet_name, model_uuid, value):
+        """Create a new budget for a model and wallet.
+
+        @param the name of the wallet.
+        @param the model UUID.
+        @param the new value of the limit.
+        @return the result form the server.
+        @raise ServerError via make_request.
+        """
+        request = {
+            'model': model_uuid,
+            'limit': value,
+        }
+        return make_request(
+            '{}wallet/{}/budget'.format(self.url, wallet_name),
+            method='POST',
+            body=request,
+            timeout=self.timeout,
+            client=self._client)
+
+    def update_budget(self, wallet_name, model_uuid, value):
+        """Update a budget limit.
+
+        @param the name of the wallet.
+        @param the model UUID.
+        @param the new value of the limit.
+        @return the result form the server.
+        @raise ServerError via make_request.
+        """
+        request = {
+            'update': {
+                'wallet': wallet_name,
+                'limit': value,
+            }
+        }
+        return make_request(
+            '{}model/{}/budget'.format(self.url, model_uuid),
+            method='PATCH',
+            body=request,
+            timeout=self.timeout,
+            client=self._client)
+
+    def delete_budget(self, model_uuid):
+        """Delete a budget.
+
+        @param the name of the wallet.
+        @param the model UUID.
+        @raise ServerError via make_request.
+        """
+        return make_request(
+            '{}model/{}/budget'.format(self.url, model_uuid),
+            method='DELETE',
+            timeout=self.timeout,
+            client=self._client)
