@@ -115,10 +115,10 @@ class TestPlans(TestCase):
                     'wallet': 'default',
                     'limit': '100',
                     'budgeted': '0',
-        			'unallocated': '100',
-        			'available': '100.00',
-        			'consumed': '0.00',
-        			'default': True,
+                    'unallocated': '100',
+                    'available': '100.00',
+                    'consumed': '0.00',
+                    'default': True,
                 },
                 {
                     'owner': 'rose',
@@ -132,11 +132,11 @@ class TestPlans(TestCase):
             ],
             'total': {
                 'limit': '110',
-        		'budgeted': '0',
-        		'available': '110.00',
-        		'unallocated': '110',
-        		'usage': '0%',
-        		'consumed': '0.00',
+                'budgeted': '0',
+                'available': '110.00',
+                'unallocated': '110',
+                'usage': '0%',
+                'consumed': '0.00',
             },
             'credit': '10000',
         }
@@ -186,7 +186,7 @@ class TestPlans(TestCase):
             'credit': '10000',
         }
         with self.assertRaises(ServerError):
-            result = self.plans.list_wallets()
+            self.plans.list_wallets()
 
     @patch('theblues.plans.make_request')
     def test_get_wallet(self, mocked):
@@ -194,11 +194,11 @@ class TestPlans(TestCase):
             'limit': '100',
             'total': {
                 'limit': '100',
-        		'budgeted': '0',
-        		'available': '100.00',
-        		'unallocated': '100',
-        		'usage': '0%',
-        		'consumed': '0.00',
+                'budgeted': '0',
+                'available': '100.00',
+                'unallocated': '100',
+                'usage': '0%',
+                'consumed': '0.00',
             },
             'credit': '10000',
         }
@@ -220,9 +220,9 @@ class TestPlans(TestCase):
         mocked.return_value = {
             'limit': '100',
             'total': {
-        		'bad': 'wolf',
+                'bad': 'wolf',
             },
             'credit': '10000',
         }
         with self.assertRaises(ServerError):
-            result = self.plans.get_wallet('default')
+            self.plans.get_wallet('default')

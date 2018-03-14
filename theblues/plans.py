@@ -1,6 +1,5 @@
 from collections import namedtuple
 import datetime
-import json
 
 from macaroonbakery import httpbakery
 
@@ -158,7 +157,7 @@ class Plans(object):
         """
         request = {
             'update': {
-                'limit': value,
+                'limit': str(value),
             }
         }
         return make_request(
@@ -178,7 +177,7 @@ class Plans(object):
         """
         request = {
             'wallet': wallet_name,
-            'limit': value,
+            'limit': str(value),
         }
         return make_request(
             '{}wallet'.format(self.url),

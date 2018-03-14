@@ -57,7 +57,7 @@ def make_request(
     if method in ('GET', 'HEAD'):
         if query:
             url = '{}?{}'.format(url, urlencode(query, True))
-    elif method in ('POST', 'PUT'):
+    elif method in ('DELETE', 'PATCH', 'POST', 'PUT'):
         kwargs['headers'] = {'Content-Type': 'application/json'}
     else:
         raise ValueError('invalid method {}'.format(method))
