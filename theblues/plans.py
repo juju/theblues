@@ -62,14 +62,14 @@ class Plans(object):
                 description=plan.get('description'),
                 price=plan.get('price')), response))
         except (KeyError, TypeError, ValueError) as err:
-            log.info(
+            log.error(
                 'cannot process plans: invalid JSON response: {!r}'.format(
                     response))
             raise ServerError(
                 'unable to get list of plans for {}: {}'.format(
                     reference.path(), err))
         except Exception as exc:
-            log.info(
+            log.error(
                 'cannot process plans: invalid JSON response: {!r}'.format(
                     response))
             raise ServerError(
@@ -108,7 +108,7 @@ class Plans(object):
                 consumed=total['consumed'])
             return response
         except Exception as err:
-            log.info(
+            log.error(
                 'cannot process wallets: invalid JSON response: {!r}'.format(
                     response))
             raise ServerError(
@@ -136,13 +136,13 @@ class Plans(object):
                 consumed=total['consumed'])
             return response
         except (KeyError, TypeError, ValueError) as err:
-            log.info(
+            log.error(
                 'cannot process wallet: invalid JSON response: {!r}'.format(
                     response))
             raise ServerError(
                 'unable to get list of wallets: {}'.format(err))
         except Exception as exc:
-            log.info(
+            log.error(
                 'cannot get wallet from server: {!r}'.format(exc))
         raise ServerError(
             'unable to get list of wallets: {}'.format(exc))
