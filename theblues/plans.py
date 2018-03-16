@@ -13,11 +13,13 @@ from theblues.utils import (
     DEFAULT_TIMEOUT,
 )
 
-Plan = namedtuple('Plan',
-                  ['url', 'plan', 'created_on', 'description', 'price'])
-Wallet = namedtuple('Wallet',
-                    ['owner', 'wallet', 'limit', 'budgeted', 'unallocated',
-                     'available', 'consumed', 'default'])
+Plan = namedtuple(
+    'Plan',
+    ['url', 'plan', 'created_on', 'description', 'price'])
+Wallet = namedtuple(
+    'Wallet',
+    ['owner', 'wallet', 'limit', 'budgeted', 'unallocated', 'available',
+     'consumed', 'default'])
 WalletTotal = namedtuple(
     'WalletTotal',
     ['limit', 'budgeted', 'unallocated', 'available', 'consumed', 'usage'])
@@ -61,25 +63,18 @@ class Plans(object):
                 ),
                 description=plan.get('description'),
                 price=plan.get('price')), response))
-        except (KeyError, TypeError, ValueError) as err:
+        except Exception as err:
             log.error(
                 'cannot process plans: invalid JSON response: {!r}'.format(
                     response))
             raise ServerError(
                 'unable to get list of plans for {}: {}'.format(
                     reference.path(), err))
-        except Exception as exc:
-            log.error(
-                'cannot process plans: invalid JSON response: {!r}'.format(
-                    response))
-            raise ServerError(
-                'unable to get list of plans for {}: {}'.format(
-                    reference.path(), exc))
 
     def list_wallets(self):
-        """Get the list of wallets
+        """Get the list of wallets.
 
-        @return an object containing a list of wallets, a total, and available
+        @return an dict containing a list of wallets, a total, and available
             credit.
         @raise ServerError
         """
@@ -88,8 +83,17 @@ class Plans(object):
             timeout=self.timeout,
             client=self._client)
         try:
-            response['wallets'] = tuple(map(
-                lambda wallet: Wallet(
+            total = response['total']
+            return {
+                'credit': response['credit'],
+                'total': WalletTotal(
+                    limit=total['limit'],
+                    budgeted=total['budgeted'],
+                    available=total['available'],
+                    unallocated=total['unallocated'],
+                    usage=total['usage'],
+                    consumed=total['consumed']),
+                'wallets': tuple(Wallet(
                     owner=wallet['owner'],
                     wallet=wallet['wallet'],
                     limit=wallet['limit'],
@@ -97,22 +101,15 @@ class Plans(object):
                     unallocated=wallet['unallocated'],
                     available=wallet['available'],
                     consumed=wallet['consumed'],
-                    default='default' in wallet), response['wallets']))
-            total = response['total']
-            response['total'] = WalletTotal(
-                limit=total['limit'],
-                budgeted=total['budgeted'],
-                available=total['available'],
-                unallocated=total['unallocated'],
-                usage=total['usage'],
-                consumed=total['consumed'])
-            return response
+                    default='default' in wallet)
+                    for wallet in response['wallets']),
+            }
         except Exception as err:
             log.error(
                 'cannot process wallets: invalid JSON response: {!r}'.format(
                     response))
             raise ServerError(
-                'unable to get list of wallets: {}'.format(err))
+                'unable to get list of wallets: {!r}'.format(err))
 
     def get_wallet(self, wallet_name):
         """Get a single wallet.
@@ -127,37 +124,34 @@ class Plans(object):
             client=self._client)
         try:
             total = response['total']
-            response['total'] = WalletTotal(
-                limit=total['limit'],
-                budgeted=total['budgeted'],
-                available=total['available'],
-                unallocated=total['unallocated'],
-                usage=total['usage'],
-                consumed=total['consumed'])
-            return response
-        except (KeyError, TypeError, ValueError) as err:
-            log.error(
-                'cannot process wallet: invalid JSON response: {!r}'.format(
-                    response))
-            raise ServerError(
-                'unable to get list of wallets: {}'.format(err))
+            return {
+                'credit': response['credit'],
+                'limit': response['limit'],
+                'total': WalletTotal(
+                    limit=total['limit'],
+                    budgeted=total['budgeted'],
+                    available=total['available'],
+                    unallocated=total['unallocated'],
+                    usage=total['usage'],
+                    consumed=total['consumed'])
+            }
         except Exception as exc:
             log.error(
                 'cannot get wallet from server: {!r}'.format(exc))
-        raise ServerError(
-            'unable to get list of wallets: {}'.format(exc))
+            raise ServerError(
+                'unable to get list of wallets: {!r}'.format(exc))
 
-    def update_wallet(self, wallet_name, value):
+    def update_wallet(self, wallet_name, limit):
         """Update a wallet with a new limit.
 
         @param the name of the wallet.
         @param the new value of the limit.
-        @return the result form the server.
+        @return a success string from the plans server.
         @raise ServerError via make_request.
         """
         request = {
             'update': {
-                'limit': str(value),
+                'limit': str(limit),
             }
         }
         return make_request(
@@ -167,17 +161,17 @@ class Plans(object):
             timeout=self.timeout,
             client=self._client)
 
-    def create_wallet(self, wallet_name, value):
+    def create_wallet(self, wallet_name, limit):
         """Create a new wallet.
 
         @param the name of the wallet.
         @param the value of the limit.
-        @return the result form the server.
+        @return a success string from the plans server.
         @raise ServerError via make_request.
         """
         request = {
             'wallet': wallet_name,
-            'limit': str(value),
+            'limit': str(limit),
         }
         return make_request(
             '{}wallet'.format(self.url),
@@ -190,7 +184,7 @@ class Plans(object):
         """Delete a wallet.
 
         @param the name of the wallet.
-        @return the result form the server.
+        @return a success string from the plans server.
         @raise ServerError via make_request.
         """
         return make_request(
@@ -199,18 +193,18 @@ class Plans(object):
             timeout=self.timeout,
             client=self._client)
 
-    def create_budget(self, wallet_name, model_uuid, value):
+    def create_budget(self, wallet_name, model_uuid, limit):
         """Create a new budget for a model and wallet.
 
         @param the name of the wallet.
         @param the model UUID.
         @param the new value of the limit.
-        @return the result form the server.
+        @return a success string from the plans server.
         @raise ServerError via make_request.
         """
         request = {
             'model': model_uuid,
-            'limit': value,
+            'limit': limit,
         }
         return make_request(
             '{}wallet/{}/budget'.format(self.url, wallet_name),
@@ -219,19 +213,19 @@ class Plans(object):
             timeout=self.timeout,
             client=self._client)
 
-    def update_budget(self, wallet_name, model_uuid, value):
+    def update_budget(self, wallet_name, model_uuid, limit):
         """Update a budget limit.
 
         @param the name of the wallet.
         @param the model UUID.
         @param the new value of the limit.
-        @return the result form the server.
+        @return a success string from the plans server.
         @raise ServerError via make_request.
         """
         request = {
             'update': {
                 'wallet': wallet_name,
-                'limit': value,
+                'limit': limit,
             }
         }
         return make_request(
@@ -246,6 +240,7 @@ class Plans(object):
 
         @param the name of the wallet.
         @param the model UUID.
+        @return a success string from the plans server.
         @raise ServerError via make_request.
         """
         return make_request(

@@ -185,8 +185,11 @@ class TestPlans(TestCase):
             },
             'credit': '10000',
         }
-        with self.assertRaises(ServerError):
+        with self.assertRaises(ServerError) as err:
             self.plans.list_wallets()
+        self.assertEqual(
+            err.exception.message,
+            'unable to get list of wallets: KeyError(\'limit\',)')
 
     @patch('theblues.plans.make_request')
     def test_get_wallet(self, mocked):
@@ -224,5 +227,8 @@ class TestPlans(TestCase):
             },
             'credit': '10000',
         }
-        with self.assertRaises(ServerError):
+        with self.assertRaises(ServerError) as err:
             self.plans.get_wallet('default')
+        self.assertEqual(
+            err.exception.message,
+            'unable to get list of wallets: KeyError(\'limit\',)')
