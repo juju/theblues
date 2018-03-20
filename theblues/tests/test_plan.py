@@ -10,6 +10,8 @@ from macaroonbakery import httpbakery
 from theblues.plans import (
     Plan,
     Plans,
+    Wallet,
+    WalletTotal,
 )
 from theblues.errors import ServerError
 from theblues.utils import DEFAULT_TIMEOUT
@@ -24,7 +26,7 @@ class TestPlans(TestCase):
             'cs:trusty/landscape-mock-0')
 
     def test_init(self):
-        self.assertEqual(self.plans.url, 'http://example.com/v2/')
+        self.assertEqual(self.plans.url, 'http://example.com/v3/')
 
     @patch('theblues.plans.make_request')
     def test_get_plans(self, mocked):
@@ -67,7 +69,7 @@ class TestPlans(TestCase):
                  price='Free'),
         ), resp)
         mocked.assert_called_once_with(
-            'http://example.com/v2/charm?charm-url=cs:trusty/landscape-mock-0',
+            'http://example.com/v3/charm?charm-url=cs:trusty/landscape-mock-0',
             timeout=DEFAULT_TIMEOUT,
             client=self.client
         )
@@ -103,3 +105,130 @@ class TestPlans(TestCase):
             '}]')
         with self.assertRaises(ServerError):
             self.plans.get_plans(self.ref)
+
+    @patch('theblues.plans.make_request')
+    def test_list_wallets(self, mocked):
+        mocked.return_value = {
+            'wallets': [
+                {
+                    'owner': 'rose',
+                    'wallet': 'default',
+                    'limit': '100',
+                    'budgeted': '0',
+                    'unallocated': '100',
+                    'available': '100.00',
+                    'consumed': '0.00',
+                    'default': True,
+                },
+                {
+                    'owner': 'rose',
+                    'wallet': 'qa',
+                    'limit': '10',
+                    'budgeted': '0',
+                    'unallocated': '10',
+                    'available': '10.00',
+                    'consumed': '0.00',
+                }
+            ],
+            'total': {
+                'limit': '110',
+                'budgeted': '0',
+                'available': '110.00',
+                'unallocated': '110',
+                'usage': '0%',
+                'consumed': '0.00',
+            },
+            'credit': '10000',
+        }
+        result = self.plans.list_wallets()
+        self.assertEqual(result, {
+            'wallets': (
+                Wallet(
+                    owner='rose',
+                    wallet='default',
+                    limit='100',
+                    budgeted='0',
+                    unallocated='100',
+                    available='100.00',
+                    consumed='0.00',
+                    default=True),
+                Wallet(
+                    owner='rose',
+                    wallet='qa',
+                    limit='10',
+                    budgeted='0',
+                    unallocated='10',
+                    available='10.00',
+                    consumed='0.00',
+                    default=False),
+            ),
+            'total': WalletTotal(
+                limit='110',
+                budgeted='0',
+                available='110.00',
+                unallocated='110',
+                usage='0%',
+                consumed='0.00'),
+            'credit': '10000',
+        })
+
+    @patch('theblues.plans.make_request')
+    def test_list_wallets_exception(self, mocked):
+        mocked.return_value = {
+            'wallets': [
+                {
+                    'bad': 'wolf',
+                },
+            ],
+            'total': {
+                'dalek': True,
+            },
+            'credit': '10000',
+        }
+        with self.assertRaises(ServerError) as err:
+            self.plans.list_wallets()
+        self.assertEqual(
+            str(err.exception),
+            'unable to get list of wallets: KeyError(\'limit\',)')
+
+    @patch('theblues.plans.make_request')
+    def test_get_wallet(self, mocked):
+        mocked.return_value = {
+            'limit': '100',
+            'total': {
+                'limit': '100',
+                'budgeted': '0',
+                'available': '100.00',
+                'unallocated': '100',
+                'usage': '0%',
+                'consumed': '0.00',
+            },
+            'credit': '10000',
+        }
+        result = self.plans.get_wallet('default')
+        self.assertEqual(result, {
+            'limit': '100',
+            'total': WalletTotal(
+                limit='100',
+                budgeted='0',
+                available='100.00',
+                unallocated='100',
+                usage='0%',
+                consumed='0.00'),
+            'credit': '10000',
+        })
+
+    @patch('theblues.plans.make_request')
+    def test_get_wallet_exception(self, mocked):
+        mocked.return_value = {
+            'limit': '100',
+            'total': {
+                'bad': 'wolf',
+            },
+            'credit': '10000',
+        }
+        with self.assertRaises(ServerError) as err:
+            self.plans.get_wallet('default')
+        self.assertEqual(
+            str(err.exception),
+            'unable to get list of wallets: KeyError(\'limit\',)')
