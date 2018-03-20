@@ -188,7 +188,7 @@ class TestPlans(TestCase):
         with self.assertRaises(ServerError) as err:
             self.plans.list_wallets()
         self.assertEqual(
-            err.exception.message,
+            str(err.exception),
             'unable to get list of wallets: KeyError(\'limit\',)')
 
     @patch('theblues.plans.make_request')
@@ -230,5 +230,5 @@ class TestPlans(TestCase):
         with self.assertRaises(ServerError) as err:
             self.plans.get_wallet('default')
         self.assertEqual(
-            err.exception.message,
+            str(err.exception),
             'unable to get list of wallets: KeyError(\'limit\',)')
