@@ -3,6 +3,14 @@
 History
 -------
 
+0.3.9 (2018-09-18)
+++++++++++++++++++
+
+Make it possible to disable stats collection
+Add wallets and budgets
+Use http bakery.
+Add charm-actions data to charm_data
+
 0.3.8 (2016-11-23)
 ++++++++++++++++++
 
