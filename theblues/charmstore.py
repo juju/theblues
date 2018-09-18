@@ -109,12 +109,14 @@ class CharmStore(object):
         data = self._get(url)
         return data.json()
 
-    def entity(self, entity_id, get_files=False, channel=None):
+    def entity(self, entity_id, get_files=False, channel=None,
+               include_stats=True):
         '''Get the default data for any entity (e.g. bundle or charm).
 
         @param entity_id The entity's id either as a reference or a string
         @param get_files Whether to fetch the files for the charm or not.
         @param channel Optional channel name.
+        @param include_stats Optionally disable stats collection
         '''
         includes = [
             'bundle-machine-count',
@@ -129,13 +131,14 @@ class CharmStore(object):
             'owner',
             'revision-info',
             'published',
-            'stats',
             'resources',
             'supported-series',
             'terms'
         ]
         if get_files:
             includes.append('manifest')
+        if include_stats:
+            includes.append('stats')
         return self._meta(entity_id, includes, channel=channel)
 
     def entities(self, entity_ids):
