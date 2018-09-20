@@ -20,20 +20,17 @@ from theblues.utils import (
 class IdentityManager(object):
     """Identity Manager API."""
 
-    def __init__(self, url, idm_user, idm_password, timeout=DEFAULT_TIMEOUT):
+    def __init__(self, url, timeout=DEFAULT_TIMEOUT):
         """Initializer.
 
         @param url The url to the identity manager (IdM) API.
-        @param idm_user The user name for the IdM.
-        @param idm_password The password for the IdM.
         @param timeout How long to wait before timing out a request in seconds;
             a value of None means no timeout.
         """
         self.url = ensure_trailing_slash(url)
-        self.auth = (idm_user, idm_password)
         self.timeout = timeout
 
-    def get_user(self, username):
+    def get_user(self, username, macaroons):
         """Fetch user data.
 
         Raise a ServerError if an error occurs in the request process.
@@ -41,7 +38,7 @@ class IdentityManager(object):
         @param username the user's name.
         """
         url = '{}u/{}'.format(self.url, username)
-        return make_request(url, auth=self.auth, timeout=self.timeout)
+        return make_request(url, timeout=self.timeout, macaroons=macaroons)
 
     def debug(self):
         """Retrieve the debug information from the identity manager."""
@@ -61,11 +58,7 @@ class IdentityManager(object):
         """
         url = '{}u/{}'.format(self.url, username)
         make_request(
-            url,
-            method='PUT',
-            body=json_document,
-            auth=self.auth,
-            timeout=self.timeout)
+            url, method='PUT', body=json_document, timeout=self.timeout)
 
     def discharge(self, username, macaroon):
         """Discharge the macarooon for the identity.
@@ -87,8 +80,7 @@ class IdentityManager(object):
             self.url, quote(username), caveats[0][1])
         logging.debug('Sending identity info to {}'.format(url))
         logging.debug('data is {}'.format(caveats[0][1]))
-        response = make_request(
-            url, method='POST', auth=self.auth, timeout=self.timeout)
+        response = make_request(url, method='POST', timeout=self.timeout)
         try:
             macaroon = response['Macaroon']
             json_macaroon = json.dumps(macaroon)
@@ -109,8 +101,7 @@ class IdentityManager(object):
         url = '{}discharge-token-for-user?username={}'.format(
             self.url, quote(username))
         logging.debug('Sending identity info to {}'.format(url))
-        response = make_request(
-            url, method='GET', auth=self.auth, timeout=self.timeout)
+        response = make_request(url, method='GET', timeout=self.timeout)
         try:
             macaroon = response['DischargeToken']
             json_macaroon = json.dumps(macaroon)
@@ -137,9 +128,7 @@ class IdentityManager(object):
             dictionary like object.
         """
         url = self._get_extra_info_url(username)
-        make_request(
-            url, method='PUT', body=extra_info, auth=self.auth,
-            timeout=self.timeout)
+        make_request(url, method='PUT', body=extra_info, timeout=self.timeout)
 
     def get_extra_info(self, username):
         """Get extra info for the given user.
@@ -149,4 +138,4 @@ class IdentityManager(object):
         @param username The username for the user who's info is being accessed.
         """
         url = self._get_extra_info_url(username)
-        return make_request(url, auth=self.auth, timeout=self.timeout)
+        return make_request(url, timeout=self.timeout)
