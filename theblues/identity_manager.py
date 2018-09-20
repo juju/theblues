@@ -36,6 +36,7 @@ class IdentityManager(object):
         Raise a ServerError if an error occurs in the request process.
 
         @param username the user's name.
+        @param macaroons the encoded macaroons string.
         """
         url = '{}u/{}'.format(self.url, username)
         return make_request(url, timeout=self.timeout, macaroons=macaroons)
