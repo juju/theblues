@@ -94,7 +94,7 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
     def setUp(self):
         global _called
         _called = False
-        self.idm = IdentityManager('http://example.com/v1', 'user', 'password')
+        self.idm = IdentityManager('http://example.com/v1')
 
     def test_login_success(self):
         with HTTMock(entity_200):
@@ -118,7 +118,6 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
             expected_url,
             method='PUT',
             body='body',
-            auth=('user', 'password'),
             timeout=DEFAULT_TIMEOUT,
         )
 
@@ -187,7 +186,6 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
         make_request_mock.assert_called_once_with(
             'http://example.com/v1/discharger/discharge'
             '?discharge-for-user=my.user%2Bname&id=identifier',
-            auth=('user', 'password'),
             timeout=DEFAULT_TIMEOUT,
             method='POST')
 
@@ -212,12 +210,10 @@ class TestIdentityManager(TestCase, helpers.TimeoutTestsMixin):
 class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
 
     def setUp(self):
-        self.idm = IdentityManager('http://example.com:8082/v1', 'user',
-                                   'password')
+        self.idm = IdentityManager('http://example.com:8082/v1')
 
     def test_init(self):
         self.assertEqual(self.idm.url, 'http://example.com:8082/v1/')
-        self.assertEqual(self.idm.auth, ('user', 'password'))
 
     @patch('theblues.identity_manager.make_request')
     def test_debug(self, mock):
@@ -233,12 +229,10 @@ class TestIDMClass(TestCase, helpers.TimeoutTestsMixin):
 
     @patch('theblues.identity_manager.make_request')
     def test_get_user(self, make_request_mock):
-        self.idm.get_user('jeffspinach')
+        self.idm.get_user('jeffspinach', 'my-macaroon')
         make_request_mock.assert_called_once_with(
             'http://example.com:8082/v1/u/jeffspinach',
-            auth=('user', 'password'),
-            timeout=DEFAULT_TIMEOUT
-        )
+            timeout=DEFAULT_TIMEOUT, macaroons='my-macaroon')
 
     def test_get_extra_info_ok(self):
         with HTTMock(extra):
