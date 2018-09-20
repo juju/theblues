@@ -3,6 +3,11 @@
 History
 -------
 
+0.4.1 (2018-09-20)
+++++++++++++++++++
+
+Do not rely on idm auth anymore. Add support for macaroons instead
+
 0.3.9 (2018-09-18)
 ++++++++++++++++++
 
