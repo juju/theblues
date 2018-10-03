@@ -29,7 +29,7 @@ def _server_error_message(url, message):
 
 def make_request(
         url, method='GET', query=None, body=None, auth=None, timeout=10,
-        client=None):
+        client=None, macaroons=None):
     """Make a request with the provided data.
 
     @param url The url to make the request to.
@@ -41,13 +41,16 @@ def make_request(
     @param timeout The request timeout in seconds, defaulting to 10 seconds.
     @param client (httpbakery.Client) holds a context for making http
     requests with macaroons.
+    @param macaroons Optional JSON serialized, base64 encoded macaroons to be
+        included in the request header.
 
     POST/PUT request bodies are assumed to be in JSON format.
     Return the response content as a JSON decoded object, or an empty dict.
     Raise a ServerError if a problem occurs in the request/response process.
     Raise a ValueError if invalid parameters are provided.
     """
-    kwargs = {'timeout': timeout, 'headers': {}}
+    headers = {}
+    kwargs = {'timeout': timeout, 'headers': headers}
     # Handle the request body.
     if body is not None:
         if isinstance(body, collections.Mapping):
@@ -58,9 +61,11 @@ def make_request(
         if query:
             url = '{}?{}'.format(url, urlencode(query, True))
     elif method in ('DELETE', 'PATCH', 'POST', 'PUT'):
-        kwargs['headers'] = {'Content-Type': 'application/json'}
+        headers['Content-Type'] = 'application/json'
     else:
         raise ValueError('invalid method {}'.format(method))
+    if macaroons is not None:
+        headers['Macaroons'] = macaroons
 
     kwargs['auth'] = auth if client is None else client.auth()
 
