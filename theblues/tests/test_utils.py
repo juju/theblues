@@ -53,6 +53,14 @@ class TestUtils(TestCase, helpers.TimeoutTestsMixin):
             response = make_request(URL, query={'uuid': 'foo'})
         self.assertEqual({u'foo': u'bar', u'baz': u'bax'}, response)
 
+    def test_make_request_with_macaroons(self):
+        def handler(url, request):
+            self.assertEqual(request.headers['Macaroons'], 'my-macaroons')
+            return {'status_code': 200}
+        # Test with a JSON decoded object.
+        with HTTMock(handler):
+            make_request(URL, macaroons='my-macaroons')
+
     def check_write_request(self, method):
         def handler(url, request):
             self.assertEqual('http://example.com/', url.geturl())
