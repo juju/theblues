@@ -3,6 +3,11 @@
 History
 -------
 
+0.5.0 (2018-10-03)
+++++++++++++++++++
+
+make_request: add support for including macaroons header
+
 0.4.1 (2018-09-20)
 ++++++++++++++++++
 
