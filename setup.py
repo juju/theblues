@@ -18,7 +18,7 @@ history = open('CHANGELOG.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='theblues',
-    version='0.4.1',
+    version='0.5.0',
     description='Python library for using the juju charm store API.',
     long_description=readme + '\n\n' + history,
     author='Juju GUI Developers',
@@ -31,7 +31,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'requests>=2.18.4',
-        'jujubundlelib>=0.4.1',
+        'jujubundlelib>=0.5.0',
         'macaroonbakery>=0.0.6',
     ],
     tests_requires=[
