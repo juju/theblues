@@ -1,3 +1,4 @@
+import logging
 from unittest import TestCase
 
 from httmock import (
@@ -354,16 +355,69 @@ class TestCharmStore(TestCase):
         self.assertEqual(self.cs.url, 'http://example.com')
 
     def test_entity(self):
+        tests = [{
+            'about': 'default includes',
+            'want_query': (
+                'include=bundle-machine-count&include=bundle-metadata&'
+                'include=bundle-unit-count&include=charm-actions&'
+                'include=charm-config&include=charm-metadata&'
+                'include=common-info&include=extra-info&include=owner&'
+                'include=published&include=resources&'
+                'include=supported-series&include=terms&include=stats'
+            ),
+        }, {
+            'about': 'custom includes',
+            'kwargs': {'includes': ['foo', 'bar']},
+            'want_query': 'include=foo&include=bar&include=stats',
+        }, {
+            'about': 'custom includes and no stats',
+            'kwargs': {'includes': ['foo'], 'include_stats': False},
+            'want_query': 'include=foo',
+        }, {
+            'about': 'custom includes and get files',
+            'kwargs': {'includes': [], 'get_files': True},
+            'want_query': 'include=manifest&include=stats',
+        }, {
+            'about': 'default includes, no stats, with files',
+            'kwargs': {'get_files': True, 'include_stats': False},
+            'want_query': (
+                'include=bundle-machine-count&include=bundle-metadata&'
+                'include=bundle-unit-count&include=charm-actions&'
+                'include=charm-config&include=charm-metadata&'
+                'include=common-info&include=extra-info&include=owner&'
+                'include=published&include=resources&'
+                'include=supported-series&include=terms&include=manifest'
+            ),
+        }]
+        for test in tests:
+            # TODO(frankban): use subtests here when switching to Python 3.
+            logging.debug(test['about'])
+            self.check_entity(
+                test.get('kwargs', {}),
+                test.get('want_query', ''))
+
+    def check_entity(self, kwargs, want_query):
+        @urlmatch(path=ID_PATH)
+        def handler(url, request):
+            self.assertEqual(request.method, 'GET')
+            self.assertEqual(url.path, '/precise/mysql-1/meta/any')
+            self.assertEqual(url.query, want_query)
+            return {'status_code': 200, 'content': {'result': 'foo'}}
+        with HTTMock(handler):
+            data = self.cs.entity(SAMPLE_CHARM_ID, **kwargs)
+        self.assertEqual(data, {'result': 'foo'})
+
+    def test_charm(self):
         with HTTMock(entity_200):
             data = self.cs.charm(SAMPLE_CHARM)
         self.assertEqual({'Meta': {'charm-metadata': {'exists': True}}}, data)
 
-    def test_entity_full_id(self):
+    def test_charm_full_id(self):
         with HTTMock(entity_200):
             data = self.cs.charm(SAMPLE_CHARM_ID)
         self.assertEqual({'Meta': {'charm-metadata': {'exists': True}}}, data)
 
-    def test_entity_reference(self):
+    def test_charm_reference(self):
         with HTTMock(entity_200):
             data = self.cs.charm(
                 references.Reference.from_string(SAMPLE_CHARM))

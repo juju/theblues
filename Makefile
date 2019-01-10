@@ -8,7 +8,7 @@ SPHINX := bin/sphinx-apidoc
 TOX := bin/tox
 VPART ?= patch
 
-SYSDEPS := libyaml-cpp-dev python-dev python3-dev python-yaml python3-yaml libsodium-dev
+SYSDEPS := libyaml-cpp-dev python-dev python3-dev python-yaml python3-yaml libsodium-dev virtualenv
 
 help:
 	@echo "bumpversion - bump version."

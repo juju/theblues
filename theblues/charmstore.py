@@ -19,6 +19,23 @@ from .errors import (
 from theblues.utils import DEFAULT_TIMEOUT, API_URL
 
 
+DEFAULT_INCLUDES = [
+    'bundle-machine-count',
+    'bundle-metadata',
+    'bundle-unit-count',
+    'charm-actions',
+    'charm-config',
+    'charm-metadata',
+    'common-info',
+    'extra-info',
+    'owner',
+    'published',
+    'resources',
+    'supported-series',
+    'terms',
+]
+
+
 class CharmStore(object):
     """A connection to the charmstore."""
 
@@ -110,34 +127,21 @@ class CharmStore(object):
         return data.json()
 
     def entity(self, entity_id, get_files=False, channel=None,
-               include_stats=True):
+               include_stats=True, includes=None):
         '''Get the default data for any entity (e.g. bundle or charm).
 
         @param entity_id The entity's id either as a reference or a string
         @param get_files Whether to fetch the files for the charm or not.
         @param channel Optional channel name.
-        @param include_stats Optionally disable stats collection
+        @param include_stats Optionally disable stats collection.
+        @param includes An optional list of meta info to include, as a
+            sequence of strings. If None, the default include list is used.
         '''
-        includes = [
-            'bundle-machine-count',
-            'bundle-metadata',
-            'bundle-unit-count',
-            'bundles-containing',
-            'charm-actions',
-            'charm-config',
-            'charm-metadata',
-            'common-info',
-            'extra-info',
-            'owner',
-            'revision-info',
-            'published',
-            'resources',
-            'supported-series',
-            'terms'
-        ]
-        if get_files:
+        if includes is None:
+            includes = DEFAULT_INCLUDES[:]
+        if get_files and 'manifest' not in includes:
             includes.append('manifest')
-        if include_stats:
+        if include_stats and 'stats' not in includes:
             includes.append('stats')
         return self._meta(entity_id, includes, channel=channel)
 
