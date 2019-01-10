@@ -3,6 +3,11 @@
 History
 -------
 
+0.5.1 (2019-01-10)
+++++++++++++++++++
+
+Add the ability to define default includes when getting entity info
+
 0.5.0 (2018-10-03)
 ++++++++++++++++++
 
