@@ -57,6 +57,7 @@ class CharmStore(object):
         super(CharmStore, self).__init__()
         self.url = url
         self.verify = verify
+        self.session = requests.Session()
         self.timeout = timeout
         self.cookies = cookies
         if client is None:
@@ -71,7 +72,7 @@ class CharmStore(object):
             (e.g. https://api.jujucharms.com/charmstore/v4/macaroon)
         """
         try:
-            response = requests.get(url, verify=self.verify,
+            response = self.session.get(url, verify=self.verify,
                                     cookies=self.cookies, timeout=self.timeout,
                                     auth=self._client.auth())
             response.raise_for_status()
